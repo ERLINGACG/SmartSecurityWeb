@@ -5,10 +5,17 @@ tcp:
      threads: 10
      timeout: 10000
 spring:
+  mqtt:
+    broker: tcp://localhost:1883
+    client-id: mqtt-client
+    username: admin
+    password: 123456
+    default-topic: /topic/#
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
   datasource:
     url: jdbc:mysql://localhost:3306/smartsecuritydb
     username: root
@@ -18,6 +25,8 @@ spring:
     time-zone: GMT+8                  # 设置时区
     serialization:
       write-dates-as-timestamps:
+
+
 mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 修正值为StdOutImpl

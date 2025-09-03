@@ -1,5 +1,6 @@
 package com.erling.service.tcpservice.ser;
 
+import com.erling.service.opencv.dnn.DnnDetectorServiceTest;
 import com.erling.service.tcpservice.config.TcpConfig;
 import com.erling.utils.log.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Component
 public class TcpService {
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final DnnDetectorServiceTest dnnDetectorServiceTest;
     private final TcpConfig tcpConfig;
     private final ThreadPoolExecutor clientThreadPool ; // 根据需求调整线程数
 
     @Autowired
-    public TcpService(SimpMessagingTemplate messagingTemplate,
+    public TcpService(SimpMessagingTemplate messagingTemplate, DnnDetectorServiceTest dnnDetectorServiceTest,
                       TcpConfig tcpConfig) {
         this.messagingTemplate = messagingTemplate;
+        this.dnnDetectorServiceTest = dnnDetectorServiceTest;
         this.tcpConfig = tcpConfig;
             this.clientThreadPool = (ThreadPoolExecutor)Executors.
                 newFixedThreadPool(
@@ -96,9 +100,15 @@ public class TcpService {
 
 //                      String message = messageBuffer.toString(StandardCharsets.UTF_8);//文本消息
                         byte[] binaryData = messageBuffer.toByteArray(); //二进制消息
-                        System.out.printf("[%s|%d] 收到图片数据，大小: %d bytes%n", topic, bodyLength, binaryData.length);
-                        String base64Image = Base64.getEncoder().encodeToString(binaryData);
-                        messagingTemplate.convertAndSend(topic, Collections.singletonMap("image", base64Image));
+                        try{
+                            byte[] data =  dnnDetectorServiceTest.detectTest(binaryData); // 调用模型预测
+                            System.out.printf("[%s|%d] 收到图片数据，大小: %d bytes%n", topic, bodyLength, binaryData.length);
+                            String base64Image = Base64.getEncoder().encodeToString(data);
+                            messagingTemplate.convertAndSend(topic, Collections.singletonMap("image", base64Image));
+                        }catch(Exception e){
+                            Logger.getLogger(TcpService.class).error("解析TCP消息失败", e);
+                        }
+
 
 
                     }catch (SocketTimeoutException e){
@@ -113,16 +123,17 @@ public class TcpService {
                  Logger.getLogger(TcpService.class).info("正常关闭TCP连接");
              } catch(Exception e){
                  Logger.getLogger(TcpService.class).error("线程池处理TCP连接失败", e);
-             }finally {
-                 try {
-                     clientSocket.close();
-                     System.out.println("TCP连接已关闭：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
-
-                 }catch (Exception e){
-                     Logger.getLogger(TcpService.class).error("TCP连接关闭失败", e);
-                 }
-                 System.out.println("[任务结束] 活跃线程: " + clientThreadPool.getActiveCount());
              }
+//             }finally {
+//                 try {
+//                     clientSocket.close();
+//                     System.out.println("TCP连接已关闭：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
+//
+//                 }catch (Exception e){
+//                     Logger.getLogger(TcpService.class).error("TCP连接关闭失败", e);
+//                 }
+//                 System.out.println("[任务结束] 活跃线程: " + clientThreadPool.getActiveCount());
+//             }
 
         });
     }

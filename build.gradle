@@ -55,6 +55,11 @@ subprojects {
 
         implementation 'com.github.penggle:kaptcha:2.3.2' // 验证码
 
+        implementation 'org.springframework.integration:spring-integration-mqtt'
+        implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+
+
+
 
     }
     dependencies {

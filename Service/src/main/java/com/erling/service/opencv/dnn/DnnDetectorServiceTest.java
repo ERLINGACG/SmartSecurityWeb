@@ -11,8 +11,8 @@ public class DnnDetectorServiceTest {
 
     DnnDetector dnnDetector=Instance.OPENCV_4120_DNN.getInstance();;
 
-     Pointer netClass=dnnDetector.createDnnDetector("lib/x64/debug/best2.onnx",
-             0.5,0.15);
+     Pointer netClass=dnnDetector.createDnnDetector("lib/x64/debug/best.onnx",
+             0.4,0.15);
 
     public byte[] detectTest(byte[] image){
         ImageData imageData=new ImageData();

@@ -16,8 +16,11 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 bootJar {
-    enabled = false
+//    enabled = false
+    mainClass = 'com.erling.Application' // 替换为你的主类全限定名
 }
+
+
 jar {
     enabled = true
 }
