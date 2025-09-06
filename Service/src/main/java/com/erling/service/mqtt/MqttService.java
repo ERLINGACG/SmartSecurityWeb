@@ -1,5 +1,6 @@
 package com.erling.service.mqtt;
 
+import com.erling.utils.log.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.support.MessageBuilder;
@@ -22,6 +23,7 @@ public class MqttService {
 
     // 发送消息到指定主题
     public void sendToMqtt(String payload, String topic) {
+        Logger.getLogger(MqttService.class).info("发送消息到主题:{},消息:{}",topic,payload);
         mqttOutboundChannel.send(MessageBuilder.withPayload(payload)
                 .setHeader("mqtt_topic", topic).build());
     }

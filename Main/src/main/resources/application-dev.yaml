@@ -2,8 +2,8 @@ tcp:
   service:
      port: 12346
   connection:
-     threads: 10
-     timeout: 10000
+     threads: 24
+     timeout: 30000
 spring:
   mqtt:
     broker: tcp://localhost:1883
@@ -25,6 +25,13 @@ spring:
     time-zone: GMT+8                  # 设置时区
     serialization:
       write-dates-as-timestamps:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
+
+
 
 
 mybatis:

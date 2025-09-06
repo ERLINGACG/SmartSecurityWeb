@@ -1,9 +1,13 @@
 package com.erling.service.tcpservice.ser;
 
-import com.erling.service.opencv.dnn.DnnDetectorServiceTest;
+import com.erling.service.mqtt.MqttService;
+import com.erling.service.opencv.dnn.YoloDnnTest;
+import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.service.tcpservice.config.TcpConfig;
+import com.erling.service.tcpservice.protocol.TcpProtocol;
 import com.erling.utils.log.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -28,17 +32,24 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class TcpService {
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final DnnDetectorServiceTest dnnDetectorServiceTest;
     private final TcpConfig tcpConfig;
     private final ThreadPoolExecutor clientThreadPool ; // 根据需求调整线程数
 
+
+    private final RedisZSetService redisZSetService;
+
+    private final MqttService mqttService;
+
     @Autowired
-    public TcpService(SimpMessagingTemplate messagingTemplate, DnnDetectorServiceTest dnnDetectorServiceTest,
-                      TcpConfig tcpConfig) {
+    public TcpService(SimpMessagingTemplate messagingTemplate,
+                      TcpConfig tcpConfig,
+                      RedisZSetService redisZSetService,
+                      MqttService mqttService) {
         this.messagingTemplate = messagingTemplate;
-        this.dnnDetectorServiceTest = dnnDetectorServiceTest;
         this.tcpConfig = tcpConfig;
-            this.clientThreadPool = (ThreadPoolExecutor)Executors.
+        this.mqttService = mqttService;
+        this.redisZSetService = redisZSetService;
+        this.clientThreadPool = (ThreadPoolExecutor)Executors.
                 newFixedThreadPool(
                         this.tcpConfig.
                                 getConnectionThreads()
@@ -51,18 +62,124 @@ public class TcpService {
                    System.out.println("TCP服务启动，端口：" + tcpConfig.getPort());
                    while (true) {
                        Socket clientSocket = serverSocket.accept();
-                       handleSocket(clientSocket);
+                       handleSocket_2(clientSocket);
                    }
                }catch(Exception e){
                    Logger.getLogger(TcpService.class).error("启动TCP服务失败", e);
                }
            }).start();
     }
+
+    private void handleSocket_2(Socket clientSocket) throws SocketException {
+        System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
+        clientSocket.setSoTimeout(tcpConfig.getConnectionTimeout()); // 设置10秒超时检测
+        TcpProtocol protocol = new TcpProtocol(new YoloDnnTest(),redisZSetService,mqttService);
+        clientThreadPool.submit(() ->{
+            try {
+                protocol.processIO(clientSocket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        clientThreadPool.submit(() ->{
+            try {
+                protocol.ProcessMessage(clientSocket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        clientThreadPool.submit(()->{
+            try {
+                protocol.SendMqttMessage(clientSocket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        clientThreadPool.submit(() ->{
+            try {
+                protocol.SendMessage(clientSocket,messagingTemplate);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+    @Deprecated
+    private void handleSocket_1(Socket clientSocket) throws SocketException {
+        System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
+        clientSocket.setSoTimeout(tcpConfig.getConnectionTimeout()); // 设置10秒超时检测
+        clientThreadPool.submit(() -> {
+            TcpProtocol protocol = new TcpProtocol(new YoloDnnTest(),redisZSetService,mqttService);
+           clientThreadPool.submit(() -> {
+               try {
+                   protocol.processIO(clientSocket);
+               } catch (IOException e) {
+                   throw new RuntimeException(e);
+               }
+           });
+           clientThreadPool.submit(() -> {
+               try {
+                   protocol.ProcessMessage(clientSocket);
+               } catch (IOException e) {
+                   throw new RuntimeException(e);
+               }
+           });
+           clientThreadPool.submit(()->{
+               try {
+                   protocol.SendMqttMessage(clientSocket);
+               } catch (IOException e) {
+                   throw new RuntimeException(e);
+               }
+           });
+           clientThreadPool.submit(() -> {
+               try {
+                   protocol.SendMessage(clientSocket,messagingTemplate);
+               } catch (IOException e) {
+                   throw new RuntimeException(e);
+               }
+           });
+        });
+    }
+   @Deprecated
+    private void handleSocket_0(Socket clientSocket) throws SocketException {
+        System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
+        clientThreadPool.submit(() ->{
+            TcpProtocol tcpProtocol = new TcpProtocol(new YoloDnnTest(),redisZSetService,mqttService);
+            new Thread(()->{
+                try {
+                    tcpProtocol.processIO(clientSocket);
+                } catch (IOException e) {
+                    Logger.getLogger(TcpService.class).error("TCP协议处理异常", e);
+                    throw new RuntimeException(e);
+                }
+            }).start();
+            new Thread(()->{
+                try {
+                    tcpProtocol.ProcessMessage(clientSocket);
+                } catch (IOException e) {
+                    Logger.getLogger(TcpService.class).error("TCP协议处理异常", e);
+                    throw new RuntimeException(e);
+                }
+            }).start();
+            new Thread(()->{
+                try {
+                    tcpProtocol.SendMessage(clientSocket,messagingTemplate);
+                } catch (IOException e) {
+                    Logger.getLogger(TcpService.class).error("TCP协议发送异常",e);
+                    throw new RuntimeException(e);
+                }
+            }).start();
+            Logger.getLogger(TcpService.class).info("get队列长度：{}", tcpProtocol.getQueueSize());
+            Logger.getLogger(TcpService.class).info("send队列长度：{}", tcpProtocol.getSendQueueSize());
+        });
+
+    }
+
     private void handleSocket(Socket clientSocket) throws SocketException {
         System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
         System.out.println("最大线程数: " + clientThreadPool.getMaximumPoolSize());
         clientSocket.setSoTimeout(tcpConfig.getConnectionTimeout()); // 设置10秒超时检测
         clientThreadPool.submit(() -> {
+            YoloDnnTest yoloDnnTest=new YoloDnnTest();
             System.out.println("当前活跃线程数: " + clientThreadPool.getActiveCount());
             System.out.println("线程池大小: " + clientThreadPool.getPoolSize());
              try(DataInputStream input = new DataInputStream(clientSocket.getInputStream())){
@@ -87,22 +204,28 @@ public class TcpService {
 
                         // 分块读取消息体（保持与TcpImageService相同的读取逻辑）
                         ByteArrayOutputStream messageBuffer = new ByteArrayOutputStream(bodyLength);
-                        byte[] chunk = new byte[1024 * 10];
-                        int remaining = bodyLength;
+                        byte[] bodyData = new byte[bodyLength];
+                        input.readFully(bodyData);
+                        lastActiveTime = System.currentTimeMillis(); // 重置活跃时间
 
-                        while (remaining > 0) { // 循环读取消息体
-                            int read = input.read(chunk, 0, Math.min(chunk.length, remaining));
-                            if (read <= 0) throw new IOException("流意外结束");
-                            lastActiveTime = System.currentTimeMillis(); // 重置活跃时间
-                            messageBuffer.write(chunk, 0, read);
-                            remaining -= read;
-                        }
+// ... existing code ...
+                        //二进制消息
+                        //                        byte[] chunk = new byte[1024 * 10];
+//                        int remaining = bodyLength;
+
+//                        while (remaining > 0) { // 循环读取消息体
+//                            int read = input.read(chunk, 0, Math.min(chunk.length, remaining));
+//                            if (read <= 0) throw new IOException("流意外结束");
+//                            lastActiveTime = System.currentTimeMillis(); // 重置活跃时间
+//                            messageBuffer.write(chunk, 0, read);
+//                            remaining -= read;
+//                        }
 
 //                      String message = messageBuffer.toString(StandardCharsets.UTF_8);//文本消息
-                        byte[] binaryData = messageBuffer.toByteArray(); //二进制消息
+//                        byte[] binaryData = messageBuffer.toByteArray(); //二进制消息
                         try{
-                            byte[] data =  dnnDetectorServiceTest.detectTest(binaryData); // 调用模型预测
-                            System.out.printf("[%s|%d] 收到图片数据，大小: %d bytes%n", topic, bodyLength, binaryData.length);
+                            byte[] data = yoloDnnTest.TEST_D2(bodyData);
+                            System.out.printf("[%s|%d] 收到图片数据，大小: %d bytes%n", topic, bodyLength, bodyData.length);
                             String base64Image = Base64.getEncoder().encodeToString(data);
                             messagingTemplate.convertAndSend(topic, Collections.singletonMap("image", base64Image));
                         }catch(Exception e){

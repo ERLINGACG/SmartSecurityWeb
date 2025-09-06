@@ -1,12 +1,20 @@
 package com.erling.service.tcpservice.ser;
 
+import com.erling.lib.instance.Instance;
+import com.erling.lib.instance.LibraryAnn;
+import com.erling.lib.instance.Load;
+import com.erling.lib.opencv.dnn.DnnDetector;
+import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.service.opencv.dnn.DnnDetectorServiceTest;
 import com.erling.service.opencv.dnn.YoloDnnTest;
 import com.erling.service.tcpservice.config.TcpConfig;
 import com.erling.utils.log.Logger;
+import com.sun.jna.Pointer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -30,16 +38,19 @@ public class TCPServiceTest_0 {
     private final ThreadPoolExecutor clientThreadPool_0 ; //连接线程池
     private final ThreadPoolExecutor clientThreadPool_1 ; //处理线程池
     private final ThreadPoolExecutor clientThreadPool_2 ; //发送线程池
-
+    @Autowired
+    private  DnnDetectorServiceTest dnnDetectorServiceTest;
 
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
 
     private final Queue<Map<String, byte[]>> getQueue = new LinkedList<>();
     private final Queue<Map<String, byte[]>> sendQueue = new LinkedList<>();
 
-    public TCPServiceTest_0(SimpMessagingTemplate messagingTemplate, DnnDetectorServiceTest dnnDetectorServiceTest, TcpConfig tcpConfig) {
+
+    public TCPServiceTest_0(SimpMessagingTemplate messagingTemplate, TcpConfig tcpConfig) {
         this.messagingTemplate = messagingTemplate;
         this.tcpConfig = tcpConfig;
+
 
         this.clientThreadPool_0 = (ThreadPoolExecutor) Executors.
                 newFixedThreadPool(
@@ -65,8 +76,10 @@ public class TCPServiceTest_0 {
             new Thread(()-> {
                 try(ServerSocket serverSocket = new ServerSocket(25500)){
                     System.out.println("TCP服务启动，端口：" + 25500);
-                    Socket clientSocket = serverSocket.accept();
-                    handleLinked(clientSocket);
+                    while (isRunning.get()) { // 添加循环监听
+                        Socket clientSocket = serverSocket.accept();
+                        handleLinked(clientSocket);
+                    }
                 }catch(Exception e){
                     Logger.getLogger(TCPServiceTest_0.class).error("启动TCP服务失败", e);
                 }
@@ -81,16 +94,11 @@ public class TCPServiceTest_0 {
         // 增加接收缓冲区大小
         clientSocket.setReceiveBufferSize(1024 * 1024); // 1MB
         clientThreadPool_0.submit(() -> {
-
             getData(clientSocket);
         });
 
-        clientThreadPool_1.submit(() -> {
-            processData();
-        });
-        clientThreadPool_2.submit(() -> {
-            sendMessages();
-        });
+        clientThreadPool_1.submit(this::processData);
+        clientThreadPool_2.submit(this::sendMessages);
 
 
     }
@@ -137,6 +145,7 @@ public class TCPServiceTest_0 {
                 }catch (SocketTimeoutException e){
                     if (System.currentTimeMillis() - lastActiveTime >= 10000) {
                         Logger.getLogger(TcpService.class).warn("10秒内无新数据，自动断开连接");
+                        clientSocket.close();
                         break;
                     }
                 }catch (Exception e){
@@ -151,6 +160,7 @@ public class TCPServiceTest_0 {
         }
     }
     public void processData() {
+        YoloDnnTest yoloDnnTest=new YoloDnnTest();
         while (isRunning.get()) {
             try {
                 Map<String, byte[]> data = null;
@@ -166,9 +176,11 @@ public class TCPServiceTest_0 {
                 if (data != null) {
                     // 这里可以添加数据处理逻辑
                     // 处理完成后，可以直接发送或放入另一个发送队列
-                    byte[] result = YoloDnnTest.TEST_D(data.values().iterator().next()
-                    ,data.values().iterator().next().length);
+//                    byte[] result = YoloDnnTest.TEST_D(data.values().iterator().next()
+//                    ,data.values().iterator().next().length);
+//                    byte[] result = dnnDetectorServiceTest.detectTest(data.values().iterator().next());
 //
+                    byte[] result = yoloDnnTest.TEST_D2(data.values().iterator().next());
                     synchronized (sendQueue) {
                         sendQueue.offer(Map.of(data.keySet().iterator().next(), result));
                         sendQueue.notifyAll(); // 通知发送线程有新的数据
@@ -198,11 +210,7 @@ public class TCPServiceTest_0 {
                 }
 
                 if (data != null) {
-                    // 这里可以添加数据处理逻辑
-                    // 处理完成后，可以直接发送或放入另一个发送队列
-
                     synchronized (sendQueue) {
-
                         sendMessage(data);
                         System.out.println("发送完成：当前发送队列长度："+sendQueue.size());
                     }
