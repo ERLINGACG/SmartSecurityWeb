@@ -25,11 +25,12 @@ spring:
     time-zone: GMT+8                  # 设置时区
     serialization:
       write-dates-as-timestamps:
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      database: 1
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#      timeout: 10000
+#      database: 1
 
 
 
