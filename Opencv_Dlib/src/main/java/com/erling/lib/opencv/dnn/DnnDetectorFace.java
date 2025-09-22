@@ -12,7 +12,7 @@ import com.sun.jna.ptr.PointerByReference;
 public interface DnnDetectorFace extends Library {
     Pointer DnnDetectorFaceCreate(FaceParam faceParam);
 
-
+    Pointer DnnDetectorFaceCreate_1(String configPath);
 
 
 

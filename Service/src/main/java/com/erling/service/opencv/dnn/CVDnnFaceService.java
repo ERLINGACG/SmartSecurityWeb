@@ -4,6 +4,7 @@ import com.erling.dao.group.GroupMemberMapper;
 import com.erling.entity.group.GroupMember;
 import com.erling.lib.instance.LibraryAnn;
 import com.erling.lib.instance.Load;
+import com.erling.lib.instance.PathConfig;
 import com.erling.lib.opencv.dnn.DnnDetectorFace;
 import com.erling.lib.opencv.dnn.DnnFeatureFace;
 import com.erling.lib.opencv.struct.output.FaceFeatureByte;
@@ -12,11 +13,6 @@ import com.erling.lib.opencv.struct.param.EncodeParam;
 import com.erling.lib.opencv.struct.param.FaceFeatureParam;
 import com.erling.lib.opencv.struct.param.FaceParam;
 import com.sun.jna.Pointer;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.PointerByReference;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,11 +22,13 @@ public class CVDnnFaceService {
 
     GroupMemberMapper groupMemberMapper;
     @LibraryAnn(
-            WindowsPath =".\\lib\\x64\\debug\\SmartSecurityCoreLibTest"
+            WindowsPath = PathConfig.WindowsPath,
+            LinuxPath = PathConfig.LinuxPath
     )
     public interface DnnFI_1 extends DnnDetectorFace{}
     @LibraryAnn(
-            WindowsPath =".\\lib\\x64\\debug\\SmartSecurityCoreLibTest"
+            WindowsPath = PathConfig.WindowsPath,
+            LinuxPath = PathConfig.LinuxPath
     )
     public interface DnnFI_2 extends DnnFeatureFace {}
 
@@ -57,8 +55,8 @@ public class CVDnnFaceService {
                 "E:\\SmartSecurity\\SmartSecurityWeb\\lib\\x64\\debug\\model\\testN\\test.prototxt");
 
       this.faceFeatureParam.setFacenet_path(
-                "E:\\SmartSecurity\\SmartSecurityWeb\\lib\\x64\\debug\\model\\facenet.onnx");
-      faceDetectorNet = dnnFI_1.DnnDetectorFaceCreate(faceParam);
+                "lib/x64/debug/model/facenet.onnx");
+      faceDetectorNet = dnnFI_1.DnnDetectorFaceCreate_1("lib/x64/debug/config/coffeConfig.json");
       faceFeatureExtractor = dnnFI_2.DnnFeatureFaceCreate(faceFeatureParam);
     }
 
@@ -102,6 +100,7 @@ public class CVDnnFaceService {
         int count=0;
         for(GroupMember groupMember:groupMembers){
             byte[] feature = groupMember.getMemberFeature();
+            System.out.println(feature.length);
             distance = dnnFI_1.DnnDetectorFaceGetDistanceForByte(faceFeatureByte.getData(), feature);
             count++;
             System.out.println("name:"+groupMember.getMemberName());

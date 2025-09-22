@@ -53,7 +53,7 @@ public class TCPServiceTest {
                     }
 
                     lastFpsTime.set(currentTime);
-                    System.out.printf("当前发送帧率: %.2f FPS%n", currentFps);
+//                    System.out.printf("当前发送帧率: %.2f FPS%n", currentFps);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;

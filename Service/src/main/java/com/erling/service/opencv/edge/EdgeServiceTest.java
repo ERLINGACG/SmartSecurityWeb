@@ -1,5 +1,6 @@
 package com.erling.service.opencv.edge;
 
+import com.erling.lib.instance.PathConfig;
 import com.erling.lib.opencv.edge.EdgeDetection;
 import com.erling.lib.instance.Instance;
 import com.erling.lib.instance.LibraryAnn;
@@ -16,7 +17,8 @@ public class EdgeServiceTest {
     private final Pointer EdgeClassPointer;
 
     @LibraryAnn(
-            WindowsPath = ".\\lib\\x64\\debug\\SmartSecurityCoreLibTest"
+            WindowsPath = PathConfig.WindowsPath,
+            LinuxPath = PathConfig.LinuxPath
     )
     interface Edge2 extends EdgeDetection{}
     EdgeServiceTest(){

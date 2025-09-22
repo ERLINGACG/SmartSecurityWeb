@@ -18,7 +18,7 @@ public class TestDnn {
         System.out.println(result.values().iterator().next().length);
     }
 
-    public static void main(String[] args) throws IOException {
-        new  TestDnn().testDnn();
-    }
+//    public static void main(String[] args) throws IOException {
+//        new  TestDnn().testDnn();
+//    }
 }

@@ -12,13 +12,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class MqttService {
     private final MessageChannel mqttOutboundChannel;
-
+    private final SimpMessagingTemplate template;
     private String topic;
     private String payload;
 
     @Autowired
-    public MqttService(MessageChannel mqttOutboundChannel) {
+    public MqttService(MessageChannel mqttOutboundChannel, SimpMessagingTemplate template) {
         this.mqttOutboundChannel = mqttOutboundChannel; // 注入MQTT输出通道
+        this.template = template;
     }
 
     // 发送消息到指定主题
@@ -32,7 +33,8 @@ public class MqttService {
     public void handleIncomingMessage(Message<?> message) {
         String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
         String payload = message.getPayload().toString();
-        System.out.printf("收到来自 [%s] 的消息: %s%n", topic, payload);
+        template.convertAndSend(topic+"/message", payload);
+        Logger.getLogger(MqttService.class).info("收到来自 [{}] 的消息: {}",topic,payload);
 
     }
 

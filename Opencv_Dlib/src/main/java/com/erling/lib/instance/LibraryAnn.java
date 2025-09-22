@@ -8,5 +8,4 @@ public @interface LibraryAnn {
     String WindowsPath() default "";
     String LinuxPath() default "";
 
-
  }

@@ -4,6 +4,7 @@ import com.erling.lib.dlib.struct.data.Output;
 import com.erling.lib.dlib.struct.param.FaceNew;
 import com.erling.lib.instance.LibraryAnn;
 import com.erling.lib.instance.Load;
+import com.erling.lib.instance.PathConfig;
 import com.sun.jna.Pointer;
 
 import java.io.File;
@@ -17,7 +18,8 @@ import java.util.Arrays;
 public class FacialRecognitionTest {
 
     @LibraryAnn(
-            WindowsPath = ".\\lib\\x64\\debug\\SmartSecurityCoreLibTest"
+            WindowsPath = PathConfig.WindowsPath,
+            LinuxPath =   PathConfig.LinuxPath
     )
     interface  faceTest extends FacialRecognition{}
 

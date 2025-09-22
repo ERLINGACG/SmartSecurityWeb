@@ -32,11 +32,11 @@ public class GroupMemberService {
         this.groupMemberMapper = groupMemberMapper;
         this.cvdnnFaceService = cvdnnFaceService;
         try{
-            this.facialRecognitionE = RF.loading();
-            FaceNew faceNew=new FaceNew();
-            faceNew.predictor_path="lib/x64/debug/shape_predictor_68_face_landmarks.dat";
-            faceNew.recognition_Path="lib/x64/debug/dlib_face_recognition_resnet_model_v1.dat";
-            faceRec=facialRecognitionE.createFacialRecognition(faceNew);
+//            this.facialRecognitionE = RF.loading();
+//            FaceNew faceNew=new FaceNew();
+//            faceNew.predictor_path="lib/x64/debug/shape_predictor_68_face_landmarks.dat";
+//            faceNew.recognition_Path="lib/x64/debug/dlib_face_recognition_resnet_model_v1.dat";
+//            faceRec=facialRecognitionE.createFacialRecognition(faceNew);
         }catch(Exception e){
             Logger.getLogger(GroupMemberService.class).error("加载模型失败",e);
         }

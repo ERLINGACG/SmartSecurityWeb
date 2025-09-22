@@ -5,11 +5,12 @@ import com.erling.service.user.ser.UserService;
 import com.erling.utils.result.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Objects;
 
 @RestController
@@ -83,6 +84,17 @@ public class UserController {
         return userService.getCodeImage();
     }
 
+    @GetMapping("/getCodeImage/T")
+    public ResponseEntity<byte[]> getCode(HttpServletRequest request){
+        return userService.getCodeImage(request.getRemoteAddr());
+    }
+    @GetMapping("/getCodeImage/C/{code}")
+    public boolean getCode(@PathVariable String code, HttpServletRequest request){
+        return userService.checkCode(code,request.getRemoteAddr());
+    }
+
+
+
     @GetMapping("/verifyToken")
     public ResponseEntity<Result<?>> verifyToken(
             @RequestHeader("Authorization") String token
@@ -97,4 +109,31 @@ public class UserController {
         return userService.checkToken(request);
     }
 
+
+    @GetMapping("/getUserDetail/{email}")
+    public ResponseEntity<Result<?>> getUserDetail(@PathVariable String email){
+        return userService.getUserDetail(email);
+    }
+
+
+    @GetMapping("/getAvatar/{uid}")
+    public ResponseEntity<byte[]> getAvatar(@PathVariable int uid){
+        return userService.getAvatar(uid);
+    }
+
+    @PostMapping("/addAvatar/{uid}")
+    public ResponseEntity<Result<?>> addAvatar(
+            @PathVariable int uid,
+            @RequestBody MultipartFile file
+    ) throws IOException {
+        return userService.addAvatar(uid,file.getBytes());
+    }
+
+    @PutMapping("/updateAvatar/{uid}")
+    public ResponseEntity<Result<?>> updateAvatar(
+            @PathVariable int uid,
+            @RequestBody MultipartFile file
+    ) throws IOException {
+        return userService.UpdateAvatar(uid,file.getBytes());
+    }
 }

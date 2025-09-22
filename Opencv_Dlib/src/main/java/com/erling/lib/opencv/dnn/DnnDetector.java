@@ -7,6 +7,8 @@ import com.sun.jna.Pointer;
 
 public interface DnnDetector extends Library {
     Pointer createDnnDetector(String modelPath,double confidence,double nms);
+
+    Pointer createDnnDetector_1(String config);
     void DnnDetectorYolo(
             Pointer dnnDetector ,
             byte[] input,

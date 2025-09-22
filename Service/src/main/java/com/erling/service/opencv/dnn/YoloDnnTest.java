@@ -4,6 +4,7 @@ import com.erling.lib.dlib.struct.data.Output;
 import com.erling.lib.instance.Instance;
 import com.erling.lib.instance.LibraryAnn;
 import com.erling.lib.instance.Load;
+import com.erling.lib.instance.PathConfig;
 import com.erling.lib.opencv.dnn.DnnDetector;
 import com.erling.lib.opencv.dnn.DnnFeatureFace;
 import com.erling.lib.opencv.struct.output.ImageData;
@@ -21,7 +22,8 @@ public class YoloDnnTest {
     static DnnDetector dnnDetector= Instance.OPENCV_4120_DNN.getInstance();;
     static Pointer netClass=dnnDetector.createDnnDetector("lib/x64/debug/best2.onnx",0.5,0.15);
     @LibraryAnn(
-            WindowsPath =".\\lib\\x64\\debug\\SmartSecurityCoreLibTest"
+            WindowsPath = PathConfig.WindowsPath,
+            LinuxPath = PathConfig.LinuxPath
     )
     interface DnnDetect_3 extends DnnDetector {}
     DnnDetect_3 dnnDetect_3;
@@ -33,7 +35,7 @@ public class YoloDnnTest {
     }
     public YoloDnnTest(){
         this.dnnDetect_3= Load.loading(DnnDetect_3.class);
-        this.netClass2=dnnDetect_3.createDnnDetector("lib/x64/debug/best2.onnx",0.5,0.15);
+        this.netClass2=dnnDetect_3.createDnnDetector_1("lib/x64/debug/config/yoloConfig.json");
     }
     public byte[] TEST_D2(byte[] img){
         ImageData data=new ImageData();
@@ -49,6 +51,7 @@ public class YoloDnnTest {
         }
         return Map.of(outputJson.getDataJsonUtf8(),data.getDataBuffer());
     }
+
 
     public static void main(String[] args) throws IOException {
         Path imagePath = Paths.get("E:\\SmartSecurity\\SmartSecurityWeb\\received_images\\img_1753069312963.jpg");

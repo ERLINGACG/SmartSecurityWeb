@@ -22,7 +22,11 @@ public enum Instance {
     private final Class<? extends Library> nativeClass;
     private Library instance;
     Instance(InstanceConfig  config, Class<? extends Library> nativeClass) {
-        this.path = config.getPath();
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            this.path = config.getWindowsPath();
+        }else {
+            this.path = config.getLinuxPath();
+        }
         this.nativeClass = nativeClass;
     }
 

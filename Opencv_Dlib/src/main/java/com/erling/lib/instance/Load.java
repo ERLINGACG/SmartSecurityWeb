@@ -21,14 +21,26 @@ public class Load {
     private static <T extends Library> T getT(Class<? extends Library> targetInterface) {
         try{
             LibraryAnn annotation = targetInterface.getAnnotation(LibraryAnn.class);
-            if (annotation != null && annotation.WindowsPath()!= null) {
-                return (T) Native.load(
-                        annotation.WindowsPath()+".dll",
-                        targetInterface
-                );
-            }else{
-                return null;
+            if(System.getProperty("os.name").toLowerCase().contains("win")){
+                if (annotation != null && annotation.WindowsPath()!= null  ) {
+                    return (T) Native.load(
+                            (annotation.WindowsPath()+".dll"),
+                            targetInterface
+                    );
+                }else{
+                    return null;
+                }
+            }else {
+                if (annotation != null && annotation.WindowsPath()!= null  ) {
+                    return (T) Native.load(
+                           annotation.LinuxPath()+".so",
+                            targetInterface
+                    );
+                }else{
+                    return null;
+                }
             }
+//
         }catch(Throwable e){
             System.out.println(e.getMessage());
             return null;

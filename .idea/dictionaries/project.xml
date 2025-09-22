@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>caffemodel</w>
+      <w>coffemodel</w>
       <w>imageqos</w>
       <w>prototxt</w>
       <w>sodel</w>

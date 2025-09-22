@@ -24,4 +24,5 @@ public class User {
 
     private String nickName;
     private LocalDateTime createdAt;
+    private String avatarPath;
 }

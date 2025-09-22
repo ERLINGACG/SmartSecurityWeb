@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -37,6 +40,7 @@ public class RedisZSetService {
             return false;
         }
     }
+
     public boolean addDetectionResult_0(String deviceTopic, String jsonResult) {
         try {
             long timestamp = System.currentTimeMillis();
@@ -61,6 +65,23 @@ public class RedisZSetService {
             // 简单的错误处理
             System.err.println("Redis操作失败: " + e.getMessage());
             return false;
+        }
+    }
+    /**
+     * 获取指定时间范围内的数据（降序）
+     * @param key Redis键
+     * @param startTimestamp 开始时间戳
+     * @param endTimestamp 结束时间戳
+     * @return 时间范围内的数据集合
+     */
+    public Set<String> getReverseRangeByTimestamp(String key, long startTimestamp, long endTimestamp) {
+        try {
+            String data= Objects.requireNonNull(redisTemplate.opsForZSet().reverseRangeByScore(key, startTimestamp, endTimestamp)).toString();
+            System.out.println(data);
+            return  redisTemplate.opsForZSet().reverseRangeByScore(key, startTimestamp, endTimestamp);
+        } catch (Exception e) {
+            Logger.getLogger(RedisZSetService.class).error("获取Redis有序集合数据失败", e);
+            return null;
         }
     }
 

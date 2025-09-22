@@ -2,8 +2,10 @@ package com.erling.service.group.dlib;
 
 import com.erling.lib.dlib.face.FacialRecognition;
 import com.erling.lib.instance.LibraryAnn;
+import com.erling.lib.instance.PathConfig;
 
 @LibraryAnn(
-        WindowsPath = ".\\lib\\x64\\debug\\SmartSecurityCoreLibTest"
+        WindowsPath = PathConfig.WindowsPath,
+        LinuxPath = PathConfig.LinuxPath
 )
 public interface FacialRecognitionE extends FacialRecognition {}

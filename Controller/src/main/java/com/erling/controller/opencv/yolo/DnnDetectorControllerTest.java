@@ -14,15 +14,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 @RestController
 @RequestMapping("/yolo/test")
 public class DnnDetectorControllerTest {
-    DnnDetectorServiceTest dnnDetectorServiceTest;
-    @Autowired
-    public DnnDetectorControllerTest(DnnDetectorServiceTest dnnDetectorServiceTest) {
-        this.dnnDetectorServiceTest = dnnDetectorServiceTest;
+//    DnnDetectorServiceTest dnnDetectorServiceTest;
+    private YoloDnnTest yoloDnnTest;
+
+    public DnnDetectorControllerTest() {
+        this.yoloDnnTest = new YoloDnnTest();
     }
 
 //    @PostMapping("/detect")
@@ -38,11 +40,11 @@ public class DnnDetectorControllerTest {
     public Callable<ResponseEntity<byte[]>> detect(@RequestParam("image") MultipartFile image) throws IOException {
         // 注意：这里的代码仍在 Servlet 容器线程中执行，用于接收参数和构建 Callable 对象
         return () -> { // 这个 lambda 表达式内部的代码将在异步任务线程中执行
-            byte[] bytes = YoloDnnTest.TEST_D(image.getBytes(),image.getBytes().length);
+            Map<String, byte[]> result = yoloDnnTest.TEST_D3(image.getBytes());
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(MediaType.IMAGE_JPEG)
-                    .body(bytes);
+                    .body(result.values().iterator().next());
         };
     }
 }

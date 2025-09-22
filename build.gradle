@@ -8,9 +8,12 @@ plugins {
 
 group = 'com.erling'
 version = '1.0-SNAPSHOT'
-
+ext {
+    springAiVersion = "1.0.0-RC1"
+}
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/snapshot' }
 }
 
 subprojects {
@@ -20,8 +23,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-
             mavenBom SpringBootPlugin.BOM_COORDINATES
+            mavenBom "org.springframework.ai:spring-ai-bom:$springAiVersion"
         }
     }
 
@@ -63,9 +66,9 @@ subprojects {
         implementation 'org.springframework.integration:spring-integration-mqtt'
         implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
 
-
-
-
+        implementation 'org.springframework.ai:spring-ai-openai'
+//        implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+        implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     }
     dependencies {
         implementation 'net.java.dev.jna:jna:5.14.0'
