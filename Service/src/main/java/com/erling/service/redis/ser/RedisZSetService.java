@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class RedisZSetService {
@@ -77,12 +78,25 @@ public class RedisZSetService {
     public Set<String> getReverseRangeByTimestamp(String key, long startTimestamp, long endTimestamp) {
         try {
             String data= Objects.requireNonNull(redisTemplate.opsForZSet().reverseRangeByScore(key, startTimestamp, endTimestamp)).toString();
-            System.out.println(data);
-            return  redisTemplate.opsForZSet().reverseRangeByScore(key, startTimestamp, endTimestamp);
+//            System.out.println(data);
+//            return  redisTemplate.opsForZSet().reverseRangeByScore(key, startTimestamp, endTimestamp); //从大到小排序
+            return  redisTemplate.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp); //从小到大排序
         } catch (Exception e) {
             Logger.getLogger(RedisZSetService.class).error("获取Redis有序集合数据失败", e);
             return null;
         }
     }
+    public Set<String> getDataByKey(String key) {
+        try {
+            return redisTemplate.opsForZSet().rangeWithScores(key, 0, -1)
+                    .stream()
+                    .map(typedTuple -> typedTuple.getValue() + "::" + typedTuple.getScore())
+                    .collect(Collectors.toSet());
+        } catch (Exception e) {
+            Logger.getLogger(RedisZSetService.class).error("<UNK>Redis<UNK>", e);
+            return null;
+        }
+    }
+
 
 }

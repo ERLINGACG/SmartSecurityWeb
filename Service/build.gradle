@@ -15,6 +15,7 @@ dependencies {
     implementation project(":Pojo")
     implementation project(":Opencv_Dlib")
     implementation project(":Utils")
+//    implementation project(':Main') // 添加模块依赖
 //    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

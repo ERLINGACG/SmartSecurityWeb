@@ -26,6 +26,7 @@ public class Esp32RequestController {
         this.groupMemberService = groupMemberService;
         this.cvdnnFaceService = cvdnnFaceService;
     }
+
     @PostMapping("/test")
     public ResponseEntity<Result<?>> test() {
         return ResponseEntity.ok(new Result<>(ResultEnum.SUCCESS,"测试成功"));
@@ -42,6 +43,7 @@ public class Esp32RequestController {
         System.out.println(file.getBytes().length);
         return cvdnnFaceService.getDistance(gid,file.getBytes());
     }
+
     @GetMapping("/looking-image")
     public ResponseEntity<byte[]> lookingImage() throws IOException {
 

@@ -17,4 +17,5 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    workingDir= file('E:\\SmartSecurity\\SmartSecurityWeb')
 }

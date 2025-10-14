@@ -25,7 +25,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // 开放测试接口
+                        .requestMatchers("/**").permitAll() // 开放所有接口
                         .anyRequest().authenticated() // 其他所有接口需要认证
                 )
                 .sessionManagement(session -> session

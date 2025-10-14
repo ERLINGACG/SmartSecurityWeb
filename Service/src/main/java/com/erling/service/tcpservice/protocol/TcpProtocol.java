@@ -3,7 +3,7 @@ package com.erling.service.tcpservice.protocol;
 import com.erling.entity.detect.DetectionHistory;
 import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
-import com.erling.service.opencv.dnn.YoloDnnTest;
+import com.erling.service.opencv.dnn.YoloDnn;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.utils.log.Logger;
 import com.erling.utils.pattern.PatternUtils;
@@ -34,7 +34,7 @@ public class TcpProtocol {
     private final MqttService mqttService;
 
     private final RedisZSetService  redisZSetService;
-    private final YoloDnnTest yoloDnnTest;
+    private final YoloDnn yoloDnn;
 
     private final DetectionHistoryService  detectionHistoryService;
 
@@ -44,13 +44,13 @@ public class TcpProtocol {
 
     int count = 0;
     public TcpProtocol(
-            YoloDnnTest yoloDnnTest,
+            YoloDnn yoloDnn,
             RedisZSetService redisZSetService,
             MqttService mqttService,
             DetectionHistoryService detectionHistoryService) {
         this.mqttService = mqttService;
         this.redisZSetService = redisZSetService;
-        this.yoloDnnTest = yoloDnnTest;
+        this.yoloDnn = yoloDnn;
         this.detectionHistoryService = detectionHistoryService;
     }
 
@@ -162,7 +162,7 @@ public class TcpProtocol {
                     if (message != null) {
 
                         for (Map.Entry<String, byte[]> entry : message.entrySet()) {
-                            Map<String, byte[]> resultMap = yoloDnnTest.TEST_D3(entry.getValue());
+                            Map<String, byte[]> resultMap = yoloDnn.TEST_D3(entry.getValue());
 
                             byte[] result = resultMap.values().iterator().next();
                             String JsonResult =resultMap.keySet().iterator().next();
@@ -296,7 +296,7 @@ public class TcpProtocol {
                             for (Map.Entry<String, byte[]> entry : message.entrySet()) {
                                 String base64Image = Base64.getEncoder().encodeToString(entry.getValue());
                                 template.convertAndSend(entry.getKey()+"/image", Collections.singletonMap("image", base64Image)); // 发送消息
-                                Logger.getLogger(TcpProtocol.class).info("转发消息: {}, 长度: {}", entry.getKey(), entry.getValue().length);
+                                Logger.getLogger(TcpProtocol.class).info("转发消息: {}, 长度: {}", entry.getKey()+"/image", entry.getValue().length);
                                 Logger.getLogger(TcpProtocol.class).info("sendQueue队列: {}", sendQueue.size());
                             }
                         }

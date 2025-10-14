@@ -5,5 +5,7 @@ import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 
 public interface DnnFeatureFace extends Library {
-    Pointer DnnFeatureFaceCreate(FaceFeatureParam param);
+    Pointer DnnFeatureFaceCreate(String config);
+
+    void DnnFeatureFaceDestroy(Pointer detector);
 }

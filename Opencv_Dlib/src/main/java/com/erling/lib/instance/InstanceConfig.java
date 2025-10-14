@@ -17,10 +17,5 @@ public enum InstanceConfig {
         this.WindowsPath = WindowsPath+".dll";
         this.LinuxPath = LinuxPath+".so";
 
-//        if (!path.endsWith(extension)) {
-//            this.path = path + extension;
-//        } else {
-//            this.path = path;
-//        }
     }
 }

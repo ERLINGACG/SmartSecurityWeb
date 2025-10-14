@@ -2,7 +2,7 @@ package com.erling.service.tcpservice.ser;
 
 import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
-import com.erling.service.opencv.dnn.YoloDnnTest;
+import com.erling.service.opencv.dnn.YoloDnn;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.service.tcpservice.config.TcpConfig;
 import com.erling.service.tcpservice.protocol.TcpProtocol;
@@ -67,7 +67,7 @@ public class TcpService {
     private void handleSocket_2(Socket clientSocket) throws SocketException {
         System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
         clientSocket.setSoTimeout(tcpConfig.getConnectionTimeout()); // 设置10秒超时检测
-        TcpProtocol protocol = new TcpProtocol(new YoloDnnTest(),redisZSetService,mqttService,detectionHistoryService);
+        TcpProtocol protocol = new TcpProtocol(new YoloDnn(),redisZSetService,mqttService,detectionHistoryService);
 
         clientThreadPool.submit(() ->{
             try {
@@ -103,7 +103,7 @@ public class TcpService {
 //        System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
 //        clientSocket.setSoTimeout(tcpConfig.getConnectionTimeout()); // 设置10秒超时检测
 //        clientThreadPool.submit(() -> {
-//            TcpProtocol protocol = new TcpProtocol(new YoloDnnTest(),redisZSetService,mqttService);
+//            TcpProtocol protocol = new TcpProtocol(new YoloDnn(),redisZSetService,mqttService);
 //           clientThreadPool.submit(() -> {
 //               try {
 //                   protocol.processIO(clientSocket);
@@ -138,7 +138,7 @@ public class TcpService {
 //    private void handleSocket_0(Socket clientSocket) throws SocketException {
 //        System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());
 //        clientThreadPool.submit(() ->{
-//            TcpProtocol tcpProtocol = new TcpProtocol(new YoloDnnTest(),redisZSetService,mqttService);
+//            TcpProtocol tcpProtocol = new TcpProtocol(new YoloDnn(),redisZSetService,mqttService);
 //            new Thread(()->{
 //                try {
 //                    tcpProtocol.processIO(clientSocket);
@@ -174,7 +174,7 @@ public class TcpService {
 //        System.out.println("最大线程数: " + clientThreadPool.getMaximumPoolSize());
 //        clientSocket.setSoTimeout(tcpConfig.getConnectionTimeout()); // 设置10秒超时检测
 //        clientThreadPool.submit(() -> {
-//            YoloDnnTest yoloDnnTest=new YoloDnnTest();
+//            YoloDnn yoloDnnTest=new YoloDnn();
 //            System.out.println("当前活跃线程数: " + clientThreadPool.getActiveCount());
 //            System.out.println("线程池大小: " + clientThreadPool.getPoolSize());
 //             try(DataInputStream input = new DataInputStream(clientSocket.getInputStream())){

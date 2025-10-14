@@ -1,7 +1,7 @@
 package com.erling.service.websocket.stomp;
 
 import com.erling.service.opencv.dnn.DnnDetectorServiceTest;
-import com.erling.service.opencv.dnn.YoloDnnTest;
+import com.erling.service.opencv.dnn.YoloDnn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -11,9 +11,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TCPServiceTest {
     private static final int TCP_PORT = 12347;
     private final SimpMessagingTemplate  messagingTemplate;
-    private DnnDetectorServiceTest  dnnDetectorServiceTest;
+
     private final ExecutorService clientThreadPool = Executors.newFixedThreadPool(10); // 根据需求调整线程数
 
     // 添加帧率统计变量
@@ -35,7 +32,6 @@ public class TCPServiceTest {
     @Autowired
     public TCPServiceTest(SimpMessagingTemplate messagingTemplate, DnnDetectorServiceTest dnnDetectorServiceTest) {
         this.messagingTemplate = messagingTemplate;
-        this.dnnDetectorServiceTest = dnnDetectorServiceTest;
         startTCPServer();
         startFpsCalculator();
     }
@@ -113,7 +109,7 @@ public class TCPServiceTest {
                         header.length, topic, bodyLength);
 // 发送前增加帧计数
                         frameCount.incrementAndGet();
-                        byte[] imageData_ = YoloDnnTest.TEST_D(binaryData,binaryData.length);
+                        byte[] imageData_ = YoloDnn.TEST_D(binaryData,binaryData.length);
                         // 在读取数据后添加日志
 
 
