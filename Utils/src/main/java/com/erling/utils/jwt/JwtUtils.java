@@ -31,6 +31,6 @@ public class JwtUtils {
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
-        return !expiration.before(new Date());
+        return expiration.before(new Date());
     }
 }

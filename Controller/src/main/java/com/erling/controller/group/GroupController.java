@@ -3,7 +3,9 @@ package com.erling.controller.group;
 import com.erling.entity.group.Group;
 import com.erling.service.group.GroupService;
 import com.erling.utils.result.Result;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +18,8 @@ public class GroupController {
      }
 
         @PostMapping("/add")
-        public ResponseEntity<Result<?>> addGroup(@RequestBody Group group) {
-             return groupService.addGroup(group);
+        public ResponseEntity<Result<?>> addGroup(@Valid @RequestBody Group group, BindingResult result) {
+             return groupService.addGroup(group, result);
          }
 
         @DeleteMapping("/delete/{gid}")
@@ -26,8 +28,8 @@ public class GroupController {
         }
 
         @PutMapping("/update")
-        public ResponseEntity<Result<?>> updateGroup(@RequestBody Group group) {
-             return groupService.updateGroup(group);
+        public ResponseEntity<Result<?>> updateGroup(@Valid @RequestBody Group group, BindingResult result) {
+             return groupService.updateGroup(group, result);
         }
 
         @GetMapping("/get")
@@ -38,5 +40,10 @@ public class GroupController {
         @GetMapping("/getAll")
         public ResponseEntity<Result<?>> getAllGroups(@RequestHeader("Group-Email") String email) {
              return groupService.getGroups(email);
+        }
+
+        @GetMapping("TEST2")
+        public void test2() {
+            groupService.test();
         }
 }

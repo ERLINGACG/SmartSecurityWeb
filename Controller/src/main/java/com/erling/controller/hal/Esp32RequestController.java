@@ -1,7 +1,6 @@
 package com.erling.controller.hal;
 
 import com.erling.service.group.GroupMemberService;
-import com.erling.service.group.dlib.FacialRecognitionE;
 import com.erling.service.opencv.dnn.CVDnnFaceService;
 import com.erling.utils.result.Result;
 import com.erling.utils.result.ResultEnum;
@@ -37,10 +36,9 @@ public class Esp32RequestController {
             @PathVariable int gid,
             @RequestBody MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            return 0.0;
+            return 0xffffff;
         }
         this.bytes =cvdnnFaceService.getImageForByte(file.getBytes());
-        System.out.println(file.getBytes().length);
         return cvdnnFaceService.getDistance(gid,file.getBytes());
     }
 

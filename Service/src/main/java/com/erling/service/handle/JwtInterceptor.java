@@ -1,12 +1,12 @@
 package com.erling.service.handle;
 
 import com.erling.utils.jwt.JwtUtils;
+import com.erling.utils.log.Logger;
 import com.erling.utils.result.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -21,18 +21,19 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/user/api/login",
             "/user/api/register",
             "/user/api/getCodeImage",
-            "/user/test/hello3",
-            "/" //开发环境下放通所有接口
-
+            "/HAL/esp32/",
+            "/ai/deepseek/ai/chat/historyTest2"
     );
 
 
     @Override
-    public boolean preHandle(HttpServletRequest request,
+    public boolean preHandle(@NonNull HttpServletRequest request,
                              @NonNull HttpServletResponse response,
                              @NonNull Object handler
     ) throws Exception {
-
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
         // 排除登录/注册等无需验证的接口
         boolean shouldExclude = EXCLUDE_PATHS.stream()
                 .anyMatch(path -> request.getRequestURI().contains(path));
@@ -41,19 +42,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 安全获取Cookie
-        Cookie[] cookies = request.getCookies();
-        String token = Optional.ofNullable(cookies) // 过滤空数组
-                .map(Arrays::stream)                // 转换为Stream流
-                .flatMap(stream ->  // 过滤掉非jwt_token的cookie
-                        stream.filter(c -> "jwt_token".
-                                equals(c.getName())
-                                ).
-                                findFirst())
-                .map(Cookie::getValue)                   // 获取token值
-                .orElse(null);                     // 若无token，则返回null
 
-        if (token != null && JwtUtils.isTokenExpired(token)) {
+        if (getToHeard(request)) {
             return true;
         }
 
@@ -64,5 +54,39 @@ public class JwtInterceptor implements HandlerInterceptor {
                 new Result<>(401, "身份验证失败", null)
         );
         return false;
+    }
+
+
+    public boolean getToCookie(HttpServletRequest request){
+        Cookie[] cookies = request.getCookies();
+        System.out.println("cookies = " + Arrays.toString(cookies));
+        String token = Optional.ofNullable(cookies) // 过滤空数组
+                .map(Arrays::stream)                // 转换为Stream流
+                .flatMap(stream ->  // 过滤掉非jwt_token的cookie
+                        stream.filter(c -> "jwt_token".
+                                        equals(c.getName())
+                                ).
+                                findFirst())
+                .map(Cookie::getValue)                   // 获取token值
+                .orElse(null);                     // 若无token，则返回null
+
+        return token != null && JwtUtils.isTokenExpired(token);
+    }
+    public boolean getToHeard(HttpServletRequest request){
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7); // 去掉"Bearer "前缀
+        }
+        if (token != null && !JwtUtils.isTokenExpired(token)) {
+            Logger.getLogger(this.getClass()).info("token未过期:{}",token);
+            return true;
+        } else if (token == null) {
+            Logger.getLogger(this.getClass()).info("Authorization头中无token,来自:{}",request.getRequestURI());
+            return false;
+        } else{
+            Logger.getLogger(this.getClass()).info("token已过期:{}",token);
+            return false;
+        }
     }
 }

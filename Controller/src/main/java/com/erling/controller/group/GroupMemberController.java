@@ -3,6 +3,7 @@ package com.erling.controller.group;
 import com.erling.entity.group.GroupMember;
 import com.erling.service.group.GroupMemberService;
 import com.erling.utils.result.Result;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,22 +21,36 @@ public class GroupMemberController {
     }
     @PostMapping("/add")
     public ResponseEntity<Result<?>> addGroupMember(
-            @RequestPart GroupMember groupMember,
+            @Valid @RequestPart GroupMember groupMember,
             @RequestPart MultipartFile file
-
     ) throws IOException {
 
             return groupMemberService.addGroupMember(groupMember, file.getBytes());
     }
 
     @GetMapping("/get/{gid}")
-    public ResponseEntity<Result<?>> getGroupMembers(@PathVariable int gid) {
+    public ResponseEntity<Result<?>> getGroupMembers(
+            @PathVariable int gid
+    ) {
+
         return groupMemberService.getGroupMembers(gid);
     }
 
+    @PutMapping("/updateNoFeatures")
+    public ResponseEntity<Result<?>> updateGroupMemberNoFeatures(
+            @RequestBody GroupMember groupMember
+    ) {
+
+        return groupMemberService.updateGroupMemberNoFeatures(groupMember);
+    }
+
     @PutMapping("/update")
-    public ResponseEntity<Result<?>> updateGroupMember(@RequestBody GroupMember groupMember) {
-        return groupMemberService.updateGroupMember(groupMember);
+    public ResponseEntity<Result<?>> updateGroupMember(
+            @RequestPart GroupMember groupMember,
+            @RequestPart MultipartFile file
+    ) throws IOException {
+
+        return groupMemberService.updateGroupMember(groupMember, file);
     }
 
     @DeleteMapping("/delete/{gid}/{mid}")
@@ -43,6 +58,8 @@ public class GroupMemberController {
         return groupMemberService.deleteGroupMember(gid,mid);
     }
 
+
+    @Deprecated
     @PostMapping("/verify/{id}")
     public ResponseEntity<Result<?>> verifyGroupMember(
             @PathVariable int id,

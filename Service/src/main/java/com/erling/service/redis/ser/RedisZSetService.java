@@ -32,7 +32,7 @@ public class RedisZSetService {
         try {
             long timestamp = System.currentTimeMillis();
             // 使用ZADD命令添加成员，分数为时间戳
-            String key = deviceTopic+":"+timestamp;
+            String key = deviceTopic + ":" + timestamp;
             redisTemplate.opsForZSet().add(key, jsonResult, timestamp);
             redisTemplate.expire(key, 24, TimeUnit.HOURS);
             return true;

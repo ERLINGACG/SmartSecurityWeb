@@ -11,15 +11,14 @@ import com.erling.lib.opencv.struct.destroy.DataDestroy;
 import com.erling.lib.opencv.struct.output.FaceFeatureByte;
 import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.lib.opencv.struct.param.EncodeParam;
-import com.erling.utils.log.Logger;
+import com.erling.service.obj.ServiceObject;
 import com.sun.jna.Pointer;
-import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class CVDnnFaceService {
+public class CVDnnFaceService  extends ServiceObject {
 
     GroupMemberMapper groupMemberMapper;
     @LibraryAnn(
@@ -39,13 +38,9 @@ public class CVDnnFaceService {
     )
     public interface dataDestroy extends DataDestroy {}
 
-
-
     DnnFI_1 dnnFI_1;
     DnnFI_2 dnnFI_2;
-
     dataDestroy dataDestroy;
-
     Pointer faceDetectorNet;
     Pointer faceFeatureExtractor;
 
@@ -88,51 +83,35 @@ public class CVDnnFaceService {
         return image.getDataBuffer();
     }
     public double getDistance(int gid,byte[] feature_img) { //计算两张人脸特征的距离
-        double distance=0;
+        double distance;
         ImageData image = new ImageData();
         FaceFeatureByte faceFeatureByte = new FaceFeatureByte();
-        try{
-            dnnFI_1.DnnDetectorFaceGetFaceFeature(
+        dnnFI_1.DnnDetectorFaceGetFaceFeature(
                     faceDetectorNet,
-                    feature_img, feature_img.length,encodeParam,
-                    faceFeatureExtractor,image,
+                    feature_img,
+                    feature_img.length,
+                    encodeParam,
+                    faceFeatureExtractor,
+                    image,
                     faceFeatureByte
-            );
-            List<GroupMember> groupMembers = groupMemberMapper.selectGroupMembersALL(gid);
-            int count=0;
-            for(GroupMember groupMember:groupMembers){
-                byte[] feature = groupMember.getMemberFeature();
-                System.out.println(feature.length);
-                distance = dnnFI_1.DnnDetectorFaceGetDistanceForByte(faceFeatureByte.getData(), feature);
-                count++;
-                System.out.println("name:"+groupMember.getMemberName());
-                System.out.println("distance:"+distance);
-                if(distance<0.6){
-                    System.out.println("第"+count+"个距离小于0.6,具体距离:"+distance);
-                    return distance;
-                }
+        );
+        List<GroupMember> groupMembers = groupMemberMapper.selectGroupMembersALL(gid);
+        int count=0;
+        for(GroupMember groupMember:groupMembers){
+            byte[] feature = groupMember.getMemberFeature();
+            if(feature==null ||  feature.length==0){
+                continue;
             }
-        }catch (Exception e){
-            Logger.getLogger(CVDnnFaceService.class).error("getDistance error",e);
-            return 0x7fffffff;
-        }finally {
-            inlineClear(faceFeatureByte,image);
+            System.out.println(feature.length);
+            distance = dnnFI_1.DnnDetectorFaceGetDistanceForByte(faceFeatureByte.getData(), feature);
+            count++;
+            log.info("distance:{},count:{},name:{}",distance,count,groupMember.getMemberName());
+            if(distance<0.6){
+                return distance;
+            }
         }
-        return distance;
+        return 0xfffffff; //返回一个很大的数，代表没有找到
     }
 
-    public void inlineClear(FaceFeatureByte faceFeatureByte,ImageData image){
-        if(faceFeatureByte!=null){
-            dataDestroy.FaceFeatureDestroy(faceFeatureByte);
-        }
-        if(image!=null){
-            dataDestroy.ImageDataDestroy(image);
-        }
-    }
 
-    @PreDestroy
-    public void release() {
-        dnnFI_1.DnnDetectorFaceDestroy(faceDetectorNet);
-        dnnFI_2.DnnFeatureFaceDestroy(faceFeatureExtractor);
-    }
 }

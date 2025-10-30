@@ -3,6 +3,7 @@ package com.erling.controller.user;
 import com.erling.entity.user.User;
 import com.erling.service.user.ser.UserService;
 import com.erling.utils.result.Result;
+import com.erling.utils.result.ren.UserResultEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +37,7 @@ public class UserController {
     ){
         if(result.hasErrors()){
             return ResponseEntity.ok(
-                    new Result<>(400,
-                            Objects.requireNonNull(result.getFieldError()).getDefaultMessage(),
-                            null
+                    new Result<>(UserResultEnum.USER_NOT_FOUND,null
                     )
             );
         }
@@ -135,5 +134,13 @@ public class UserController {
             @RequestBody MultipartFile file
     ) throws IOException {
         return userService.UpdateAvatar(uid,file.getBytes());
+    }
+
+    @PutMapping("/updateNickname/{email}/{nickname}")
+    public ResponseEntity<Result<?>> updateNickname(
+            @PathVariable String email,
+            @PathVariable String nickname
+    ){
+        return userService.UpdateNickname(email,nickname);
     }
 }

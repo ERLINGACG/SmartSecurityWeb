@@ -2,11 +2,14 @@ package com.erling.service.user.ser;
 
 import com.erling.dao.user.UserMapper;
 import com.erling.entity.user.User;
+import com.erling.utils.fileU.FileUtils;
 import com.erling.utils.jwt.JwtUtils;
 import com.erling.utils.log.Logger;
 import com.erling.utils.passworld.PasswordUtils;
 import com.erling.utils.result.Result;
 import com.erling.utils.result.ResultEnum;
+import com.erling.utils.result.ren.ServiceResultEnum;
+import com.erling.utils.result.ren.UserResultEnum;
 import com.google.code.kaptcha.Producer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -15,18 +18,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.multipart.MultipartFile;
-import com.erling.utils.fileU.FileUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -59,44 +57,49 @@ public class UserService {
         if (u != null) {
             if (PasswordUtils.VerifyPassword(user.getPasswordHash(), u.getPasswordHash())) {
                 String token = JwtUtils.generateToken(user.getEmail());
+                System.out.println("登录生成的token为 " + token);
                 return ResponseEntity.ok()
-//                        .header("Authorization", token)
                         .header(HttpHeaders.SET_COOKIE,
                                 String.format("jwt_token=%s; Path=/; HttpOnly; Max-Age=%d; SameSite=Strict",
                                         token,
                                         EXPIRATION_MS/1000))
                         .body(new Result<>(
-                                ResultEnum.LOGIN_SUCCESS,
+                                UserResultEnum.USER_LOGIN_SUCCESS,
                                 token
                             )
                         );
             } else {
-                return ResponseEntity.ok(
+                return ResponseEntity.
+                        status(HttpStatus.UNAUTHORIZED).
+                        body(
                         new Result<>(
-                                ResultEnum.WRONG_PASSWORD,
+                                UserResultEnum.USER_LOGIN_FAILED,
                                 null
                         )
                 );
             }
         }
-        return ResponseEntity.ok(
-                new Result<>(
-                        200,
-                        "邮箱未注册",
-                        null
-                )
-        );
+        return ResponseEntity
+                .status(UserResultEnum.USER_NOT_FOUND.getCode())
+                .body(
+                        new Result<>(
+                                UserResultEnum.USER_NOT_FOUND,
+                                null
+                        )
+                );
     }
     public ResponseEntity<Result<?>> Register(@Valid User user) {
         User u = userMapper.getUserByEmail(user.getEmail());
 
         if (u != null) {
-            return ResponseEntity.ok(
-                    new Result<>(
-                            ResultEnum.EMAIL_REGISTERED,
-                            null
-                    )
-            );
+            return ResponseEntity
+                    .status(UserResultEnum.USER_ALREADY_EXIST.getCode())
+                    .body(
+                        new Result<>(
+                                UserResultEnum.USER_ALREADY_EXIST,
+                                null
+                        )
+                    );
         }
         try{
             user.setCreatedAt(LocalDateTime.now());
@@ -230,7 +233,6 @@ public class UserService {
 
     public ResponseEntity<Result<?>> getUserDetail(String email){
         User u = userMapper.getUserByEmailNotPwd(email);
-//        Logger.getLogger(UserService.class).info(u.toString());
         return ResponseEntity.ok(
                 new Result<>(
                         ResultEnum.SUCCESS,
@@ -283,7 +285,7 @@ public class UserService {
             FileUtils.saveFile(avatar,savePath,fileName);
             return ResponseEntity.ok(
                     new Result<>(
-                            ResultEnum.SUCCESS,
+                            ServiceResultEnum.SUCCESS,
                             true
                     )
             );
@@ -295,7 +297,24 @@ public class UserService {
                     )
             );
         }
+    }
 
+    public ResponseEntity<Result<?>> UpdateNickname(String email, String nickname) {
+        boolean b = userMapper.updateNickname(nickname, email);
+        if(!b){
+                return ResponseEntity.ok(
+                        new Result<>(
+                                ServiceResultEnum.FAILURE,
+                                false
+                        )
+                );
+        }
+        return ResponseEntity.ok(
+                new Result<>(
+                        ServiceResultEnum.SUCCESS,
+                        true
+                )
+        );
     }
 
 }

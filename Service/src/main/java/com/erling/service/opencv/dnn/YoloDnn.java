@@ -9,10 +9,6 @@ import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.lib.opencv.struct.output.OutputJson;
 import com.sun.jna.Pointer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 public class YoloDnn {
@@ -26,11 +22,7 @@ public class YoloDnn {
     interface DnnDetect_3 extends DnnDetector {}
     DnnDetect_3 dnnDetect_3;
     Pointer netClass2;
-    public static byte[] TEST_D(byte[] img,int length){
-        ImageData data=new ImageData();
-        dnnDetector.DnnDetectorYolo(netClass,img,length,data);
-        return data.getDataBuffer();
-    }
+
     public YoloDnn(){
         this.dnnDetect_3= Load.loading(DnnDetect_3.class);
         this.netClass2=dnnDetect_3.CreateDnnDetector("./lib/x64/debug/config/yoloConfig.json");

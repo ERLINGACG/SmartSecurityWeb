@@ -27,6 +27,12 @@ public interface GroupMemberMapper {
             "WHERE groupId=#{groupId} AND mid=#{mid}")
     boolean updateGroupMember(GroupMember groupMember);
 
+    @Update("UPDATE smartsecuritydb.groupmember SET " +
+            "memberName=#{memberName}, memberIdentity=#{memberIdentity}, " +
+            "memberDescription=#{memberDescription},updateTime=#{updateTime} " +
+            "WHERE groupId=#{groupId} AND mid=#{mid}")
+    boolean updateGroupMemberNoFeatures(GroupMember groupMember);
+
     @Select("SELECT mid,groupId,memberName,memberEmail,memberGender,memberIdentity,memberDescription,updateTime " +
             "FROM smartsecuritydb.groupmember " +
             "where groupmember.groupId=#{gid}")

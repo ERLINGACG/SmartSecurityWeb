@@ -21,7 +21,7 @@ spring:
   ai:
     openai:
       base-url: https://api.deepseek.com
-      api-key: sk-93540fa139e94c0783309a97c6ca0528
+      api-key:
       chat:
         options:
           model: deepseek-chat
@@ -45,6 +45,10 @@ spring:
 #      timeout: 10000
 #      database: 1
 
+
+Idebug:
+  showDebug: true
+  islog: true
 
 
 

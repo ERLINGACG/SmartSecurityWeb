@@ -16,7 +16,7 @@ public interface UserMapper {
   boolean deleteUserByEmail(String email);
 
   @Update("UPDATE user SET nickName = #{nickName} WHERE email = #{email}")
-  boolean updateUser(String nickName, String email);
+  boolean updateNickname(String nickName, String email);
 
   @Select("SELECT * FROM user WHERE email = #{email}")
   User getUserByEmail(String email);
