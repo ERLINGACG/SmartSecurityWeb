@@ -18,10 +18,10 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // 启用内存消息代理，携带这些前缀的消息会被路由到代理
+
         registry.enableSimpleBroker("/topic", "/queue");
-        // 设置应用目的地前缀，客户端发送消息到这些前缀的地址
         registry.setApplicationDestinationPrefixes("/app");
+
     }
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {

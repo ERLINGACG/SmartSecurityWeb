@@ -1,5 +1,6 @@
 package com.erling.lib.instance;
 
+import com.erling.lib.ann.LibraryAnn;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 

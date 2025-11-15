@@ -2,7 +2,7 @@ package com.erling.service.opencv.dnn;
 
 import com.erling.dao.group.GroupMemberMapper;
 import com.erling.entity.group.GroupMember;
-import com.erling.lib.instance.LibraryAnn;
+import com.erling.lib.ann.LibraryAnn;
 import com.erling.lib.instance.Load;
 import com.erling.lib.instance.PathConfig;
 import com.erling.lib.opencv.dnn.DnnDetectorFace;

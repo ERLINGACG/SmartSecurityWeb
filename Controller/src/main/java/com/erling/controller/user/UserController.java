@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/user/api")
@@ -41,7 +40,7 @@ public class UserController {
                     )
             );
         }
-        return userService.Login(user);
+        return userService.Login(user,result);
     }
 
     /**
@@ -54,19 +53,11 @@ public class UserController {
     public ResponseEntity<?> register(
             @RequestBody @Valid User user,
             @RequestParam String code,
+            HttpServletRequest request,
             BindingResult result
     ){
-        if(result.hasErrors()){
-            return ResponseEntity.ok(
-                    new Result<>(400,
-                            Objects.requireNonNull(result.getFieldError()).getDefaultMessage(),
-                            null
-                    )
-            );
-        }
-        if(userService.checkCode(code)){
-            return userService.
-                    Register(user);
+        if(userService.checkCode(code,request.getRemoteAddr())){
+            return userService.Register(user,result);
         }
         else{
             return ResponseEntity.ok(
@@ -79,34 +70,15 @@ public class UserController {
 
     }
     @GetMapping("/getCodeImage")
-    public ResponseEntity<byte[]> getCode(){
-        return userService.getCodeImage();
+    public ResponseEntity<byte[]> getCode(HttpServletRequest request){
+        return userService.getCodeImage(request);
     }
 
-    @GetMapping("/getCodeImage/T")
-    public ResponseEntity<byte[]> getCode(HttpServletRequest request){
-        return userService.getCodeImage(request.getRemoteAddr());
-    }
     @GetMapping("/getCodeImage/C/{code}")
     public boolean getCode(@PathVariable String code, HttpServletRequest request){
         return userService.checkCode(code,request.getRemoteAddr());
     }
 
-
-
-    @GetMapping("/verifyToken")
-    public ResponseEntity<Result<?>> verifyToken(
-            @RequestHeader("Authorization") String token
-    ){
-        return userService.checkToken(token);
-    }
-
-    @GetMapping("/verifyToken_1")
-    public ResponseEntity<Result<?>> verifyToken_1(
-            HttpServletRequest request
-    ){
-        return userService.checkToken(request);
-    }
 
 
     @GetMapping("/getUserDetail/{email}")

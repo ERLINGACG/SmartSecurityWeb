@@ -3,6 +3,7 @@ package com.erling.service.tcpservice.protocol;
 import com.erling.entity.detect.DetectionHistory;
 import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
+import com.erling.service.obj.ServiceObject;
 import com.erling.service.opencv.dnn.YoloDnn;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.utils.log.Logger;
@@ -22,7 +23,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class TcpProtocol {
+public class TcpProtocol extends ServiceObject {
     private final Queue<Map<String, byte[]>> getQueue = new LinkedList<>();
 
     private final Queue<Map<String, byte[]>> sendQueue = new LinkedList<>();
@@ -43,11 +44,12 @@ public class TcpProtocol {
 
 
     int count = 0;
-    public TcpProtocol(
+    public TcpProtocol( //初始化
             YoloDnn yoloDnn,
             RedisZSetService redisZSetService,
             MqttService mqttService,
-            DetectionHistoryService detectionHistoryService) {
+            DetectionHistoryService detectionHistoryService
+    ) {
         this.mqttService = mqttService;
         this.redisZSetService = redisZSetService;
         this.yoloDnn = yoloDnn;
@@ -110,14 +112,14 @@ public class TcpProtocol {
                      processingStandards.readData(input);
                      String topic = processingStandards.getTopic();
                      byte[] bodyData =(byte[]) processingStandards.getBody(ProcessingStandards.ReadMode.BINARY_MODE);
-                        synchronized (getQueue) {
+                     synchronized (getQueue) {
                             getQueue.offer(Map.of(topic, bodyData)); // 加入消息队列
                             getQueue.notifyAll(); // 通知处理线程有新的数据
                             long endTime = System.currentTimeMillis();
                             Logger.getLogger(TcpProtocol.class).debug("收到消息: {}, 长度: {}", topic, bodyData.length);
                             Logger.getLogger(TcpProtocol.class).debug("队列长度: {}", getQueue.size());
                             Logger.getLogger(TcpProtocol.class).debug("收到消息耗时: {}ms", endTime - startTime);
-                        }
+                     }
 
                 }catch (SocketTimeoutException e){
                     if (System.currentTimeMillis() - lastActiveTime >= 30000) {

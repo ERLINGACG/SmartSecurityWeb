@@ -3,6 +3,7 @@ package com.erling.controller.test;
 import com.erling.service.user.ser.UserService;
 import com.erling.utils.jwt.JwtUtils;
 import com.erling.utils.result.Result;
+import com.erling.utils.tomls.ReadToml;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,11 @@ public class Controller {
         return ResponseEntity.ok(
                 new Result<>(200, "helloVue", true)
         );
+    }
+
+    @GetMapping("toml")
+    public String toml() {
+        return ReadToml.TomlString("/config/test.toml","Title") ;
     }
 
 }

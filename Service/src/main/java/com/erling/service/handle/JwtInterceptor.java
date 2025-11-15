@@ -22,7 +22,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/user/api/register",
             "/user/api/getCodeImage",
             "/HAL/esp32/",
-            "/ai/deepseek/ai/chat/historyTest2"
+            "/ai/deepseek/chat/generateReport",
+            "/"
     );
 
 
@@ -56,7 +57,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         return false;
     }
 
-
+    @SuppressWarnings("unused")
     public boolean getToCookie(HttpServletRequest request){
         Cookie[] cookies = request.getCookies();
         System.out.println("cookies = " + Arrays.toString(cookies));
@@ -72,6 +73,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         return token != null && JwtUtils.isTokenExpired(token);
     }
+
     public boolean getToHeard(HttpServletRequest request){
         String authHeader = request.getHeader("Authorization");
         String token = null;

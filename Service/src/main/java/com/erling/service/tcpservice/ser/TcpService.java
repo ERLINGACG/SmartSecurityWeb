@@ -1,11 +1,15 @@
 package com.erling.service.tcpservice.ser;
 
+import com.erling.service.config.DebugConfig;
 import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
 import com.erling.service.opencv.dnn.YoloDnn;
+import com.erling.service.opencv.dnn.model.YoloV5;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.service.tcpservice.config.TcpConfig;
 import com.erling.service.tcpservice.protocol.TcpProtocol;
+import com.erling.service.tcpservice.protocol.data.DataQueue;
+import com.erling.service.tcpservice.protocol.life.LifecycleConn;
 import com.erling.utils.log.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -24,6 +28,8 @@ public class TcpService {
     private final SimpMessagingTemplate messagingTemplate;
 
     private final TcpConfig tcpConfig;
+
+    private final DebugConfig  debugConfig;
     private final ThreadPoolExecutor clientThreadPool ; // 根据需求调整线程数
 
 
@@ -37,9 +43,12 @@ public class TcpService {
     public TcpService(SimpMessagingTemplate messagingTemplate,
                       TcpConfig tcpConfig,
                       RedisZSetService redisZSetService,
-                      MqttService mqttService, DetectionHistoryService detectionHistoryService) {
+                      MqttService mqttService,
+                      DetectionHistoryService detectionHistoryService,
+                      DebugConfig debugConfig) {
         this.messagingTemplate = messagingTemplate;
         this.tcpConfig = tcpConfig;
+        this.debugConfig = debugConfig;
         this.mqttService = mqttService;
         this.redisZSetService = redisZSetService;
         this.detectionHistoryService = detectionHistoryService;
@@ -56,7 +65,8 @@ public class TcpService {
                    System.out.println("TCP服务启动，端口：" + tcpConfig.getPort());
                    while (true) {
                        Socket clientSocket = serverSocket.accept();
-                       handleSocket_2(clientSocket);
+                       System.out.println("TCP<UNK>" + clientSocket.getInetAddress().getHostAddress());
+                       LifeConn(clientSocket);
                    }
                }catch(Exception e){
                    Logger.getLogger(TcpService.class).error("启动TCP服务失败", e);
@@ -98,6 +108,80 @@ public class TcpService {
             }
         });
     }
+
+    public void LifeConn(Socket clientSocket){
+        DataQueue dataQueue = new DataQueue();
+        LifecycleConn.run(new LifecycleConn().
+                setLogEnable(debugConfig.isLog()).                  //启用日志
+                setConnKey(tcpConfig.getConnKey()).                 //设置连接密钥
+                setTimeout(tcpConfig.getConnectionTimeout()).       //设置连接超时时间
+                setClientThreadPool(clientThreadPool).              //绑定线程池
+                setTemplate(messagingTemplate).                     //绑定WebSocket消息模板
+                setMqttService(mqttService).                        //绑定MQTT服务
+                setRedisZSetService(redisZSetService).              //绑定Redis服务
+                setDetectionHistoryService(detectionHistoryService).//绑定检测历史服务
+                setClientSocket(clientSocket).                      //绑定客户端
+                setDataQueue(dataQueue).                            //绑定数据队列
+                setYoloV5(new YoloV5()).
+                initConn().
+                initProc().
+                initSendImage().
+                initSendMqtt().
+                initSendUrgMqtt()
+        );
+
+    }
+//    public void handleSocket(Socket clientSocket) throws SocketException {
+//        DataQueue dataQueue = new DataQueue();
+//
+//        GetDataForConn getDataForConn =
+//                new GetDataForConn().
+//                        setLog(debugConfig.isLog()).
+//                        setConnKey(tcpConfig.getConnKey()).
+//                        setTimeout(tcpConfig.getConnectionTimeout()).
+//                        setClientSocket(clientSocket).
+//                        setDataQueue(dataQueue);
+//
+//        ProDataForConn proDataForConn =
+//                new ProDataForConn().
+//                        setLog(debugConfig.isLog()).
+//                        setClientSocket(clientSocket).
+//                        setDataQueue(dataQueue).
+//                        setDnn(new YoloDnn());
+//        SendWebSForConn sendWebSForConn =
+//                new SendWebSForConn().
+//                        setLog(debugConfig.isLog()).
+//                        setClientSocket(clientSocket).
+//                        setDataQueue(dataQueue).
+//                        setTemplate(messagingTemplate);
+//
+//        SendMqttMegForConn sendMqttMegForConn =
+//                new SendMqttMegForConn().
+//                        setLog(debugConfig.isLog()).
+//                        setClientSocket(clientSocket).
+//                        setDataQueue(dataQueue).
+//                        setRedisZSetService(redisZSetService).
+//                        setMqttService(mqttService);
+//
+//        SendMqttUrgForConn sendMqttUrgForConn =
+//                new SendMqttUrgForConn().
+//                        setLog(debugConfig.isLog()).
+//                        setClientSocket(clientSocket).
+//                        setDataQueue(dataQueue).
+//                        setDetectionHistoryService(detectionHistoryService).
+//                        setMqttService(mqttService);
+//
+//
+//
+//        clientThreadPool.submit(getDataForConn::Connect);
+//        clientThreadPool.submit(proDataForConn::processImage);
+//        clientThreadPool.submit(sendWebSForConn::SendByteAndTop);
+//        clientThreadPool.submit(sendMqttMegForConn::SendMqttMeg);
+//        clientThreadPool.submit(sendMqttUrgForConn::SendMqttUrg);
+//
+//
+//
+//    }
 //    @Deprecated
 //    private void handleSocket_1(Socket clientSocket) throws SocketException {
 //        System.out.println("TCP连接已建立：" + clientSocket.getInetAddress()+":"+clientSocket.getPort());

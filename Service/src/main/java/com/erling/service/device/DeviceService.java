@@ -112,8 +112,5 @@ public class DeviceService extends ServiceObject {
                   DeviceResultEnum.DEVICE_NOT_FOUND
           );
       }
-      public void test2() throws Exception{
-          throw new Exception("test2");
-      }
 
 }

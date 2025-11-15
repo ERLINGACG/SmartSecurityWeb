@@ -2,18 +2,14 @@ package com.erling.lib.dlib.face;
 
 import com.erling.lib.dlib.struct.data.Output;
 import com.erling.lib.dlib.struct.param.FaceNew;
-import com.erling.lib.instance.LibraryAnn;
+import com.erling.lib.ann.LibraryAnn;
 import com.erling.lib.instance.Load;
 import com.erling.lib.instance.PathConfig;
 import com.sun.jna.Pointer;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.nio.file.Files;
-import java.util.Arrays;
 
 public class FacialRecognitionTest {
 

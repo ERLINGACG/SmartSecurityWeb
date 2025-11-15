@@ -42,8 +42,4 @@ public class GroupController {
              return groupService.getGroups(email);
         }
 
-        @GetMapping("TEST2")
-        public void test2() {
-            groupService.test();
-        }
 }

@@ -11,8 +11,10 @@ repositories {
 
 dependencies {
     implementation project(':Controller') // 添加模块依赖
+    implementation project(':Utils') // 添加模块依赖
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
 }
 
 test {

@@ -1,6 +1,6 @@
 package com.erling.service.mqtt;
 
-import com.erling.utils.log.Logger;
+import com.erling.service.obj.ServiceObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.support.MessageBuilder;
@@ -10,11 +10,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MqttService {
+public class MqttService extends ServiceObject {
     private final MessageChannel mqttOutboundChannel;
     private final SimpMessagingTemplate template;
-    private String topic;
-    private String payload;
 
     @Autowired
     public MqttService(MessageChannel mqttOutboundChannel, SimpMessagingTemplate template) {
@@ -24,9 +22,12 @@ public class MqttService {
 
     // 发送消息到指定主题
     public void sendToMqtt(String payload, String topic) {
-        Logger.getLogger(MqttService.class).info("发送消息到主题:{},消息:{}",topic,payload);
-        mqttOutboundChannel.send(MessageBuilder.withPayload(payload)
-                .setHeader("mqtt_topic", topic).build());
+        log.info("发送消息到主题:{},消息:{}",topic,payload);
+        mqttOutboundChannel.send(MessageBuilder.
+                withPayload(payload).
+                setHeader("mqtt_topic", topic).
+                build()
+        );
     }
     // 接收消息处理（监听mqttInputChannel）
     @ServiceActivator(inputChannel = "mqttInputChannel")
@@ -34,7 +35,7 @@ public class MqttService {
         String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
         String payload = message.getPayload().toString();
         template.convertAndSend(topic+"/message", payload);
-        Logger.getLogger(MqttService.class).info("收到来自 [{}] 的消息: {}",topic,payload);
+        log.info("收到来自 [{}] 的消息: {}",topic,payload);
 
     }
 

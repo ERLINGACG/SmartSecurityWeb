@@ -76,14 +76,11 @@ public class GroupMemberService extends ServiceObject {
         HashMap<String,Object> map=new HashMap<>();
         Output output=new Output();
         facialRecognitionE.getDetection(faceRec,imageInput,imageInput.length,output);
-            if(output.size==0){
-                 return ResponseEntity.ok(
-                         new Result<>(
-                                 ResultEnum.MEMBER_VERIFY_FACES_ISNULL,
-                                 null
-                         )
-                 );
-             }
+        if(output.size==0){
+                throw new MemberBusinessException(
+                        MemberResultEnum.MEMBER_DETECT_NOT_FACE
+                );
+        }
         for(GroupMember groupMember:groupMemberMapper.selectGroupMembersALL(gid)){
 
             double distance =   facialRecognitionE.getDistance(

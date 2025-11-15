@@ -92,7 +92,4 @@ public class GroupService extends ServiceObject {
                     );
 
     }
-    public void test(){
-        throw  new GroupBusinessException(GroupResultEnum.ADD_GROUP_PARAM_ERROR);
-    }
 }

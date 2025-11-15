@@ -1,6 +1,6 @@
 package com.erling.controller.opencv.yolo;
 
-import com.erling.service.opencv.dnn.YoloDnn;
+import com.erling.service.opencv.dnn.model.YoloV5;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +17,17 @@ import java.util.concurrent.Callable;
 @RequestMapping("/yolo/test")
 public class DnnDetectorControllerTest {
 
-    private final YoloDnn yoloDnn;
+    private final YoloV5 yoloV5;
 
     public DnnDetectorControllerTest() {
-        this.yoloDnn = new YoloDnn();
+        this.yoloV5 = new YoloV5();
     }
 
-    @PostMapping("/detect")
+    @PostMapping("/detect/v5")
     public Callable<ResponseEntity<byte[]>> detect(@RequestParam("image") MultipartFile image) {
-        // 注意：这里的代码仍在 Servlet 容器线程中执行，用于接收参数和构建 Callable 对象
+
         return () -> { // 这个 lambda 表达式内部的代码将在异步任务线程中执行
-            Map<String, byte[]> result = yoloDnn.TEST_D3(image.getBytes());
+            Map<String, byte[]> result = yoloV5.DnnYoloV5Detection(image.getBytes().length, image.getBytes());
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(MediaType.IMAGE_JPEG)

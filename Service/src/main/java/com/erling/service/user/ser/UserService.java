@@ -2,12 +2,13 @@ package com.erling.service.user.ser;
 
 import com.erling.dao.user.UserMapper;
 import com.erling.entity.user.User;
+import com.erling.service.exception.exc.UserBusinessException;
+import com.erling.service.obj.ServiceObject;
 import com.erling.utils.fileU.FileUtils;
 import com.erling.utils.jwt.JwtUtils;
 import com.erling.utils.log.Logger;
 import com.erling.utils.passworld.PasswordUtils;
 import com.erling.utils.result.Result;
-import com.erling.utils.result.ResultEnum;
 import com.erling.utils.result.ren.ServiceResultEnum;
 import com.erling.utils.result.ren.UserResultEnum;
 import com.google.code.kaptcha.Producer;
@@ -19,11 +20,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +35,14 @@ import java.util.Objects;
 import static com.erling.utils.jwt.JwtUtils.EXPIRATION_MS;
 
 @Service
-public class UserService {
+public class UserService extends ServiceObject {
     UserMapper  userMapper;
 
     HttpServletRequest request;
 
-    String code;
+    Map<String,String> ip_code=new HashMap<>();
     Producer  producer;
 
-    Map<String,String>code_Ip=new HashMap<>();
     @Autowired
     public UserService(
             UserMapper userMapper,
@@ -52,12 +54,13 @@ public class UserService {
         this.producer = producer;
 
     }
-    public ResponseEntity<Result<?>> Login(User user) {
+    public ResponseEntity<Result<?>> Login(User user, BindingResult result) {
+        validate(result);
         User u = userMapper.getUserByEmail(user.getEmail());
         if (u != null) {
             if (PasswordUtils.VerifyPassword(user.getPasswordHash(), u.getPasswordHash())) {
                 String token = JwtUtils.generateToken(user.getEmail());
-                System.out.println("登录生成的token为 " + token);
+                log.info("登录生成的token为 {}", token);
                 return ResponseEntity.ok()
                         .header(HttpHeaders.SET_COOKIE,
                                 String.format("jwt_token=%s; Path=/; HttpOnly; Max-Age=%d; SameSite=Strict",
@@ -69,75 +72,36 @@ public class UserService {
                             )
                         );
             } else {
-                return ResponseEntity.
-                        status(HttpStatus.UNAUTHORIZED).
-                        body(
-                        new Result<>(
-                                UserResultEnum.USER_LOGIN_FAILED,
-                                null
-                        )
-                );
+                throw new UserBusinessException(UserResultEnum.USER_LOGIN_FAILED);
             }
         }
-        return ResponseEntity
-                .status(UserResultEnum.USER_NOT_FOUND.getCode())
-                .body(
-                        new Result<>(
-                                UserResultEnum.USER_NOT_FOUND,
-                                null
-                        )
-                );
+        throw new UserBusinessException(UserResultEnum.USER_NOT_FOUND);
     }
-    public ResponseEntity<Result<?>> Register(@Valid User user) {
+    public ResponseEntity<Result<?>> Register(@Valid User user, BindingResult result) {
+        validate(result);
         User u = userMapper.getUserByEmail(user.getEmail());
-
         if (u != null) {
-            return ResponseEntity
-                    .status(UserResultEnum.USER_ALREADY_EXIST.getCode())
-                    .body(
-                        new Result<>(
-                                UserResultEnum.USER_ALREADY_EXIST,
-                                null
-                        )
-                    );
+            throw new UserBusinessException(UserResultEnum.USER_ALREADY_EXIST);
         }
-        try{
-            user.setCreatedAt(LocalDateTime.now());
-            user.setPasswordHash(PasswordUtils.EncodePassword(user.getPasswordHash()));
-            boolean b = userMapper.insertUser(user);
-
-            return ResponseEntity.ok(
+        user.setCreatedAt(LocalDateTime.now());
+        user.setPasswordHash(PasswordUtils.EncodePassword(user.getPasswordHash()));
+        boolean b = userMapper.insertUser(user);
+        return ResponseEntity.ok(
                     new Result<>(
-                            ResultEnum.REGISTER_SUCCESS,
+                            UserResultEnum.USER_REGISTER_SUCCESS,
                             b
                     )
             );
+    }
 
-        }catch (Exception e){
-            Logger.getLogger(UserService.class).error(e.getMessage());
-            return ResponseEntity.ok(
-                    new Result<>(
-                            ResultEnum.INTERNAL_SERVER_ERROR,
-                            null
-                    )
-            );
-        }
-    }
-    public ResponseEntity<Result<?>> getAll(){
-        return ResponseEntity.ok(
-                new Result<>(
-                        200,
-                        "success",
-                        userMapper.getAllUsers()
-                )
-        );
-    }
-    public ResponseEntity<byte[]> getCodeImage(String ip) {
+
+
+    public ResponseEntity<byte[]> getCodeImage(HttpServletRequest request) {
         try {
-            String code = producer.createText();
-            code_Ip.put(ip,code);
-//            System.out.println(code);
-            BufferedImage image = producer.createImage(code);
+            String c = producer.createText();
+            log.info("验证码为 {},ip为 {}", c,request.getRemoteAddr());
+            BufferedImage image = producer.createImage(c);
+            ip_code.put(request.getRemoteAddr(),c);
 
             ByteArrayOutputStream bass = new ByteArrayOutputStream();
             ImageIO.write(image, "jpeg", bass);
@@ -148,83 +112,16 @@ public class UserService {
                     .contentType(MediaType.IMAGE_JPEG)
                     .body(imageBytes);
         } catch (IOException e) {
-            Logger.getLogger(UserService.class).error("验证码生成失败: {}", e.getMessage());
-            return ResponseEntity.
-                    status(
-                            HttpStatus.INTERNAL_SERVER_ERROR
-                    ).
-                    build();
-        }
-
-    }
-
-    public ResponseEntity<byte[]> getCodeImage() {
-        try {
-            code = producer.createText();
-            System.out.println(code);
-            BufferedImage image = producer.createImage(code);
-
-            ByteArrayOutputStream bass = new ByteArrayOutputStream();
-            ImageIO.write(image, "jpeg", bass);
-            byte[] imageBytes = bass.toByteArray();
-
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .body(imageBytes);
-        } catch (IOException e) {
-            Logger.getLogger(UserService.class).error("验证码生成失败: {}", e.getMessage());
-            return ResponseEntity.
-                    status(
-                    HttpStatus.INTERNAL_SERVER_ERROR
-                    ).
-                    build();
-        }
-
-    }
-    public ResponseEntity<Result<?>> checkToken(String token) {
-        if(JwtUtils.isTokenExpired(token)){
-            return ResponseEntity.ok(
-                    new Result<>(
-                            200,
-                            "token验证成功",
-                            null
-                    )
-            );
-        }
-        else{
-            return ResponseEntity.ok(
-                    new Result<>(
-                            400,
-                            "token验证失败",
-                            null
-                    )
-            );
+            throw new UserBusinessException(ServiceResultEnum.FAILURE);
         }
     }
-    public ResponseEntity<Result<?>> checkToken(HttpServletRequest request) {
-//        String token = request.getHeader("Authorization");
-        String token = request.getCookies()[0].getValue();
-        System.out.println(token);
-        if(token == null){
-            return ResponseEntity.ok(
-                    new Result<>(
-                            400,
-                            "token为空",
-                            null
-                    )
-            );
-        }
-        return checkToken(token);
-    }
-    public boolean checkCode(String inputCode) {
-        return Objects.equals(inputCode, code);
-    }
+
+
     public boolean checkCode(String inputCode,String ip) {
-        for(Map.Entry<String,String> entry:code_Ip.entrySet()){
+        for(var entry:ip_code.entrySet()){
             Logger.getLogger(UserService.class).info("ip:{},验证码{}",entry.getKey(),entry.getValue());
             if(entry.getKey().equals(ip) && entry.getValue().equals(inputCode)){
-
+                ip_code.remove(ip);
                 return true;
             }
         }
@@ -235,7 +132,7 @@ public class UserService {
         User u = userMapper.getUserByEmailNotPwd(email);
         return ResponseEntity.ok(
                 new Result<>(
-                        ResultEnum.SUCCESS,
+                        UserResultEnum.USER_DETAIL_SUCCESS,
                         u
                 )
         );
@@ -243,34 +140,28 @@ public class UserService {
     public ResponseEntity<byte[]> getAvatar(int uid) {
         try {
             String avatarPath = userMapper.getUserAvatarByUid(uid);
-            byte[] bytes = FileUtils.readFile(avatarPath);
+            byte[] bytes;
+            bytes = FileUtils.readFile(Objects.requireNonNullElse(avatarPath, "E:\\SmartSecurity\\user\\default.png"));
             return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.IMAGE_JPEG).body(bytes);
         } catch (IOException e) {
-            Logger.getLogger(UserService.class).error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            throw new UserBusinessException(UserResultEnum.USER_GET_AVATAR_FAILED);
         }
     }
     public ResponseEntity<Result<?>> addAvatar(int uid, byte[] avatar) {
         String savePath="E:\\SmartSecurity\\user";
-        String fileName=uid+".jpg";
+        String fileName= MessageFormat.format("{0}.jpg", uid);
         try {
             FileUtils.saveFile(avatar,savePath,fileName);
         } catch (IOException e) {
-            Logger.getLogger(UserService.class).error(e.getMessage());
-            return ResponseEntity.ok(
-                    new Result<>(
-                            ResultEnum.INTERNAL_SERVER_ERROR,
-                            null
-                    )
-            );
+           throw new UserBusinessException(ServiceResultEnum.FAILURE);
         }
         User user = new User();
         user.setUid(uid);
-        user.setAvatarPath(savePath+"\\"+fileName);
+        user.setAvatarPath(MessageFormat.format("{0}\\{1}", savePath, fileName));
         boolean b = userMapper.addAvatar(user);
         return ResponseEntity.ok(
                 new Result<>(
-                        ResultEnum.SUCCESS,
+                        ServiceResultEnum.SUCCESS,
                         b
                 )
         );
@@ -279,35 +170,32 @@ public class UserService {
 
         String oldAvatarPath = userMapper.getUserAvatarByUid(uid);
         String savePath="E:\\SmartSecurity\\user";
-        String fileName=uid+".jpg";
+        String fileName= MessageFormat.format("{0}.jpg", uid);
         try {
-            FileUtils.deleteFile(oldAvatarPath);
+            if (FileUtils.isImage(oldAvatarPath)) {
+                FileUtils.deleteFile(oldAvatarPath);
+            }
+            User newUser = new User();
+            newUser.setUid(uid);
+            newUser.setAvatarPath(MessageFormat.format("{0}\\{1}", savePath, fileName));
+            boolean b = userMapper.addAvatar(newUser);
             FileUtils.saveFile(avatar,savePath,fileName);
+            log.info("更新用户{}的头像为{},是否成功:{}",uid, MessageFormat.format("{0}\\{1}", savePath, fileName),b);
             return ResponseEntity.ok(
                     new Result<>(
                             ServiceResultEnum.SUCCESS,
-                            true
+                            b
                     )
             );
         } catch (IOException e) {
-            Logger.getLogger(UserService.class).error(e.getMessage());
-            return ResponseEntity.ok(
-                    new Result<>(
-                            ResultEnum.INTERNAL_SERVER_ERROR,e.getMessage()
-                    )
-            );
+            throw new UserBusinessException(ServiceResultEnum.FAILURE);
         }
     }
 
     public ResponseEntity<Result<?>> UpdateNickname(String email, String nickname) {
         boolean b = userMapper.updateNickname(nickname, email);
         if(!b){
-                return ResponseEntity.ok(
-                        new Result<>(
-                                ServiceResultEnum.FAILURE,
-                                false
-                        )
-                );
+            throw new UserBusinessException(UserResultEnum.USER_NOT_FOUND);
         }
         return ResponseEntity.ok(
                 new Result<>(

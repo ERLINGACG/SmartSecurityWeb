@@ -18,4 +18,8 @@ public class TcpConfig {
     @Getter
     @Value("${tcp.connection.timeout}")
     private int connectionTimeout;
+
+    @Getter
+    @Value("${tcp.connection.connKey}")
+    private String connKey;
 }
