@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Base64;
 
 
 @RestController
@@ -19,6 +20,7 @@ public class GroupMemberController {
     public GroupMemberController(GroupMemberService groupMemberService) {
         this.groupMemberService = groupMemberService;
     }
+
     @PostMapping("/add")
     public ResponseEntity<Result<?>> addGroupMember(
             @Valid @RequestPart GroupMember groupMember,
@@ -28,6 +30,21 @@ public class GroupMemberController {
             return groupMemberService.addGroupMember(groupMember, file.getBytes());
     }
 
+//    @Data
+//    class RequestData{
+//
+//    }
+
+    @PostMapping("/addB64")
+    public ResponseEntity<Result<?>> simplestTest(@RequestBody RequestData requestData) throws IOException {
+//        System.out.println("收到原始数据: " + requestData);
+//        System.out.println("收到原始数据: " + requestData.getGroupMember());
+        System.out.println("收到原始数据: " + requestData.getBase64());
+        byte[] imageBytes = Base64.getDecoder().decode(requestData.getBase64());
+//        Files.write(Path.of("./test.jpg"), imageBytes);
+        return groupMemberService.addGroupMember(requestData.getGroupMember(), imageBytes);
+    }
+
     @GetMapping("/get/{gid}")
     public ResponseEntity<Result<?>> getGroupMembers(
             @PathVariable int gid
@@ -35,6 +52,14 @@ public class GroupMemberController {
 
         return groupMemberService.getGroupMembers(gid);
     }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<Result<?>> getAllGroupMembers(@RequestParam String email) {
+
+        return groupMemberService.getGroupMembersEmail(email);
+    }
+
+
 
     @PutMapping("/updateNoFeatures")
     public ResponseEntity<Result<?>> updateGroupMemberNoFeatures(
@@ -49,7 +74,6 @@ public class GroupMemberController {
             @RequestPart GroupMember groupMember,
             @RequestPart MultipartFile file
     ) throws IOException {
-
         return groupMemberService.updateGroupMember(groupMember, file);
     }
 
@@ -66,6 +90,16 @@ public class GroupMemberController {
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         return groupMemberService.verifyGroupMemberMysql(id, file.getBytes());
+    }
+
+
+    @PostMapping("/verifyDnnSSDcaffem/")
+    public ResponseEntity<Result<?>> verifyGroupMemberDnnSSDcaffem(
+            @RequestParam String topic,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        return groupMemberService.verifyGroupMemberDnnSSDcaffem(topic, file.getBytes());
+//        return groupMemberService.verifyGroupMemberMysql(id, file.getBytes());
     }
 
 }

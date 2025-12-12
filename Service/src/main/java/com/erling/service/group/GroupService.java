@@ -92,4 +92,12 @@ public class GroupService extends ServiceObject {
                     );
 
     }
+     public ResponseEntity<Result<?>> getGroupsByTopic(String groupTopic) {
+            return ResponseEntity.
+                    ok(new Result<>(
+                                ResultEnum.GROUP_SELECT_SUCCESS,
+                                groupMapper.getGroupsByTopic(groupTopic)
+                       )
+                    );
+     }
 }

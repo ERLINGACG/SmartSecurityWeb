@@ -10,8 +10,6 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.util.Map;
-
 @Configuration
 public class RedisConfig {
     // 配置第一个 Redis 数据库连接
@@ -34,6 +32,15 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory2() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName("localhost");
+        config.setPort(6379);
+        config.setDatabase(2); // 使用不同的数据库索引
+        return new LettuceConnectionFactory(config);
+    }
+
     // 为第一个数据库创建 RedisTemplate
     @Bean
     @Primary
@@ -45,6 +52,12 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, String> redisTemplate1(
             @Qualifier("redisConnectionFactory1") RedisConnectionFactory connectionFactory) {
+        return getStringStringRedisTemplate(connectionFactory);
+    }
+
+    @Bean
+    public RedisTemplate<String, String> redisTemplate2(
+            @Qualifier("redisConnectionFactory2") RedisConnectionFactory connectionFactory) {
         return getStringStringRedisTemplate(connectionFactory);
     }
 

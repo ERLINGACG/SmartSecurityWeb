@@ -42,7 +42,7 @@ public enum ResultEnum {
     GROUP_EXIST(4002, "分组已存在"),
     GROUP_ADD_SUCCESS(2006, "分组添加成功"),
     GROUP_ADD_FAIL(4003, "分组添加失败"),
-    GROUP_SELECT_SUCCESS(2004, "分组查询成功"), // 原200改为4位业务码
+    GROUP_SELECT_SUCCESS(200, "分组查询成功"), // 原200改为4位业务码
     GROUP_SELECT_FAIL(4005, "分组查询失败"),
     GROUP_DELETE_SUCCESS(2007, "分组删除成功"),
     GROUP_DELETE_FAIL(4007, "分组删除失败"),

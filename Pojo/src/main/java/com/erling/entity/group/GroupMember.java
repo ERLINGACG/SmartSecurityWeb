@@ -28,4 +28,9 @@ public class GroupMember {
     String memberDescription;    //成员描述
     byte[] memberFeature;        //成员特征
     LocalDateTime updateTime;    //更新时间
+
+    public GroupMember clearFeature(){
+        this.memberFeature=null;
+        return this;
+    }
 }

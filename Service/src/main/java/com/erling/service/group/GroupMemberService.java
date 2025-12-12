@@ -1,6 +1,8 @@
 package com.erling.service.group;
 
+import com.erling.dao.group.GroupMapper;
 import com.erling.dao.group.GroupMemberMapper;
+import com.erling.entity.group.Group;
 import com.erling.entity.group.GroupMember;
 import com.erling.lib.dlib.struct.data.Output;
 import com.erling.lib.dlib.struct.param.FaceNew;
@@ -8,7 +10,9 @@ import com.erling.lib.instance.Load;
 import com.erling.service.exception.exc.MemberBusinessException;
 import com.erling.service.group.dlib.FacialRecognitionE;
 import com.erling.service.obj.ServiceObject;
-import com.erling.service.opencv.dnn.CVDnnFaceService;
+import com.erling.service.opencv.model.facenet.ArcFace;
+import com.erling.service.opencv.model.ssd.SSDcaffem;
+import com.erling.service.opencv.model.yunet.YuNet;
 import com.erling.utils.log.Logger;
 import com.erling.utils.result.Result;
 import com.erling.utils.result.ResultEnum;
@@ -21,13 +25,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GroupMemberService extends ServiceObject {
 
     GroupMemberMapper  groupMemberMapper;
-    CVDnnFaceService  cvdnnFaceService;
+//    CVDnnFaceService  cvdnnFaceService;
+
+    GroupMapper  groupMapper;
+    SSDcaffem ssdcaffem;
+
+    YuNet  yunet;
 
     FacialRecognitionE facialRecognitionE;
     Pointer faceRec;
@@ -46,16 +58,20 @@ public class GroupMemberService extends ServiceObject {
         }
     }
 
-    public GroupMemberService(GroupMemberMapper groupMemberMapper,CVDnnFaceService cvdnnFaceService) {
+    public GroupMemberService(GroupMemberMapper groupMemberMapper,GroupMapper  groupMapper) {
         this.groupMemberMapper = groupMemberMapper;
-        this.cvdnnFaceService = cvdnnFaceService;
+//        this.cvdnnFaceService = cvdnnFaceService;
+        this.groupMapper = groupMapper;
+        this.ssdcaffem = new SSDcaffem();
+        this.yunet = new YuNet(new ArcFace());
     }
 
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<Result<?>> addGroupMember(GroupMember groupMember, byte[] imageInput) {
 
              groupMember.setUpdateTime(LocalDateTime.now());
-             byte[] feature = cvdnnFaceService.getFeatureForByte(imageInput);
+//             byte[] feature = ssdcaffem.DnnSSDcaffemDetectionFeature(imageInput.length,imageInput);
+             byte[] feature = yunet.DnnYuNetDebugTime(imageInput.length,imageInput);
              if(feature.length==0){
                  throw new MemberBusinessException(
                          MemberResultEnum.MEMBER_DETECT_NOT_FACE
@@ -111,18 +127,80 @@ public class GroupMemberService extends ServiceObject {
 
     }
 
+    public ResponseEntity<Result<?>> verifyGroupMemberDnnSSDcaffem(String topic, byte[] imageInput) {
+//        byte[] imageFeature = ssdcaffem.DnnSSDcaffemDetectionFeature(imageInput.length,imageInput);
+        byte[] imageFeature = yunet.DnnYuNetDebugTime(imageInput.length,imageInput);
+        if(imageFeature.length==0){
+                throw new MemberBusinessException(
+                        MemberResultEnum.MEMBER_DETECT_NOT_FACE
+                );
+        }
+        List<Group> groupList = groupMapper.getGroupsByTopic(topic);
+        double minDistance = Double.MAX_VALUE;
+        GroupMember minDistanceMember = null; // 记录最小距离对应的成员
+        for(Group group:groupList){
+            List<GroupMember> groupMemberList = groupMemberMapper.selectGroupMembersALL(group.getGid());
+            if (groupMemberList.isEmpty()) {
+                continue; // 跳过无成员的群组
+            }
+            for(GroupMember groupMember:groupMemberList){
+                byte[] feature = groupMember.getMemberFeature();
+                if(feature!=null){
+                    double distance = ssdcaffem.VerifyFeature(imageFeature,feature);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        minDistanceMember = groupMember.clearFeature(); // 清除特征后记录
+                    }
+                }
+            }
+        }
+        if (minDistanceMember != null) {
+            return ResponseEntity.ok(
+                    new Result<>(MemberResultEnum.MEMBER_GET_SUCCESS,
+                                Map.of("memberName",minDistanceMember,"distance",minDistance)
+                    )
+            );
+        } else {
+           throw new MemberBusinessException(
+                   MemberResultEnum.MEMBER_NOT_FOUND
+           );
+        }
+    }
+
     public ResponseEntity<Result<?>> getGroupMembers(int gid){
         return ResponseEntity.ok(
-                new Result<>(200,
-                            "获取成功",
+                new Result<>(MemberResultEnum.MEMBER_GET_SUCCESS,
                             groupMemberMapper.selectGroupMembers(gid)
+                )
+        );
+    }
+
+    public ResponseEntity<Result<?>> getGroupMembersEmail(String email){
+        List<Group> groupList = groupMapper.getGroups(email);
+        if(groupList.isEmpty()){
+            throw new MemberBusinessException(
+                    MemberResultEnum.MEMBER_NOT_FOUND
+            );
+        }
+        List<GroupMember> groupMemberListR = new ArrayList<>();
+        for(Group group:groupList){
+          List<GroupMember> groupMemberList = groupMemberMapper.selectGroupMembers(group.getGid());
+          if(groupMemberList.isEmpty()){
+              continue;
+          }
+          groupMemberListR.addAll(groupMemberList);
+        }
+        return ResponseEntity.ok(
+                new Result<>(MemberResultEnum.MEMBER_GET_SUCCESS,
+                        groupMemberListR
                 )
         );
     }
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<Result<?>> updateGroupMember(GroupMember groupMember, MultipartFile file) throws IOException {
-            byte[] feature = cvdnnFaceService.getFeatureForByte(file.getBytes());
 
+//            byte[] feature = ssdcaffem.DnnSSDcaffemDetectionFeature(file.getBytes().length,file.getBytes());
+            byte[] feature = yunet.DnnYuNetDebugTime(file.getBytes().length,file.getBytes());
             if(feature.length==0){
                 throw new MemberBusinessException(
                         MemberResultEnum.MEMBER_DETECT_NOT_FACE
@@ -130,9 +208,9 @@ public class GroupMemberService extends ServiceObject {
             }
             groupMember.setMemberFeature(feature);
             groupMember.setUpdateTime(LocalDateTime.now());
+            log.info("更新成员信息:{}",groupMember);
             return ResponseEntity.ok(
-                    new Result<>(200,
-                            "更新成功",
+                    new Result<>(MemberResultEnum.MEMBER_UPDATE_SUCCESS,
                             groupMemberMapper.updateGroupMember(groupMember)
                     )
             );
@@ -142,8 +220,7 @@ public class GroupMemberService extends ServiceObject {
     public ResponseEntity<Result<?>> updateGroupMemberNoFeatures(GroupMember groupMember){
         groupMember.setUpdateTime(LocalDateTime.now());
         return ResponseEntity.ok(
-                new Result<>(200,
-                            "更新成功",
+                new Result<>(MemberResultEnum.MEMBER_UPDATE_SUCCESS,
                             groupMemberMapper.updateGroupMemberNoFeatures(groupMember)
                 )
         );
@@ -154,16 +231,18 @@ public class GroupMemberService extends ServiceObject {
             boolean isDelete=groupMemberMapper.deleteGroupMember(gid,mid);
             if(!isDelete){
                 throw new MemberBusinessException(
-                        MemberResultEnum.MEMBER_DELETE_NOT_EXIST
+                        MemberResultEnum.MEMBER_NOT_FOUND
                 );
             }
             return ResponseEntity.ok(
-                    new Result<>(200,
-                            "删除成功",
+                    new Result<>(
+                             MemberResultEnum.MEMBER_DELETE_SUCCESS,
                             true
                     )
             );
 
     }
+
+
 
 }

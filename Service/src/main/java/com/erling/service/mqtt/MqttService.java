@@ -14,6 +14,8 @@ public class MqttService extends ServiceObject {
     private final MessageChannel mqttOutboundChannel;
     private final SimpMessagingTemplate template;
 
+
+
     @Autowired
     public MqttService(MessageChannel mqttOutboundChannel, SimpMessagingTemplate template) {
         this.mqttOutboundChannel = mqttOutboundChannel; // 注入MQTT输出通道
@@ -38,5 +40,7 @@ public class MqttService extends ServiceObject {
         log.info("收到来自 [{}] 的消息: {}",topic,payload);
 
     }
+
+
 
 }

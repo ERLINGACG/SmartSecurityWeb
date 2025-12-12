@@ -42,6 +42,8 @@ public interface GroupMemberMapper {
 
     @Select("SELECT * FROM smartsecuritydb.groupmember where groupmember.groupId=#{gid}")
     List<GroupMember> selectGroupMembersALL(int gid);
+
+
     @Select("SELECT * FROM smartsecuritydb.groupmember where groupmember.groupId=#{gid} AND groupmember.memberEmail=#{email}")
     GroupMember selectGroupMember(int gid,String email);
 

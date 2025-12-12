@@ -3,7 +3,6 @@ package com.erling.controller.user;
 import com.erling.entity.user.User;
 import com.erling.service.user.ser.UserService;
 import com.erling.utils.result.Result;
-import com.erling.utils.result.ren.UserResultEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -34,12 +33,12 @@ public class UserController {
             @RequestBody @Valid User user,
             BindingResult result
     ){
-        if(result.hasErrors()){
-            return ResponseEntity.ok(
-                    new Result<>(UserResultEnum.USER_NOT_FOUND,null
-                    )
-            );
-        }
+//        if(result.hasErrors()){
+//            return ResponseEntity.ok(
+//                    new Result<>(UserResultEnum.USER_NOT_FOUND,null
+//                    )
+//            );
+//        }
         return userService.Login(user,result);
     }
 

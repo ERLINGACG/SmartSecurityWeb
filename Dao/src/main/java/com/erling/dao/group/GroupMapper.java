@@ -17,6 +17,10 @@ public interface GroupMapper {
     @Select("SELECT * FROM smartsecuritydb.`group` WHERE `group`.groupEmail = #{email}")
     List<Group> getGroups(String email);
 
+    @Select("SELECT * FROM smartsecuritydb.`group` WHERE `group`.groupTopic=#{groupTopic}")
+    List<Group> getGroupsByTopic(String groupTopic);
+
+
 
     @Insert("INSERT INTO smartsecuritydb.`group` " +
             "(groupName,groupEmail,groupTopic,groupDescription,groupVisibility) " +

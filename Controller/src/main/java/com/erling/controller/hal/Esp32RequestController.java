@@ -10,8 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@RestController
-@RequestMapping("/HAL/esp32")
+//@RestController
+//@RequestMapping("/HAL/esp32")
 public class Esp32RequestController {
 
     GroupMemberService groupMemberService;

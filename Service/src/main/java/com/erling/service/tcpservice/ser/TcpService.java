@@ -4,7 +4,8 @@ import com.erling.service.config.DebugConfig;
 import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
 import com.erling.service.opencv.dnn.YoloDnn;
-import com.erling.service.opencv.dnn.model.YoloV5;
+import com.erling.service.opencv.model.yolo.YoloBoot;
+import com.erling.service.redis.ser.RedisDeviceInfoService;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.service.tcpservice.config.TcpConfig;
 import com.erling.service.tcpservice.protocol.TcpProtocol;
@@ -35,6 +36,8 @@ public class TcpService {
 
     private final RedisZSetService redisZSetService;
 
+    private final RedisDeviceInfoService redisDeviceInfoService;
+
     private final MqttService mqttService;
 
     private final DetectionHistoryService  detectionHistoryService;
@@ -45,13 +48,14 @@ public class TcpService {
                       RedisZSetService redisZSetService,
                       MqttService mqttService,
                       DetectionHistoryService detectionHistoryService,
-                      DebugConfig debugConfig) {
+                      DebugConfig debugConfig, RedisDeviceInfoService redisDeviceInfoService) {
         this.messagingTemplate = messagingTemplate;
         this.tcpConfig = tcpConfig;
         this.debugConfig = debugConfig;
         this.mqttService = mqttService;
         this.redisZSetService = redisZSetService;
         this.detectionHistoryService = detectionHistoryService;
+        this.redisDeviceInfoService = redisDeviceInfoService;
         this.clientThreadPool = (ThreadPoolExecutor)Executors.
                 newFixedThreadPool(
                         this.tcpConfig.
@@ -65,7 +69,6 @@ public class TcpService {
                    System.out.println("TCP服务启动，端口：" + tcpConfig.getPort());
                    while (true) {
                        Socket clientSocket = serverSocket.accept();
-                       System.out.println("TCP<UNK>" + clientSocket.getInetAddress().getHostAddress());
                        LifeConn(clientSocket);
                    }
                }catch(Exception e){
@@ -118,11 +121,13 @@ public class TcpService {
                 setClientThreadPool(clientThreadPool).              //绑定线程池
                 setTemplate(messagingTemplate).                     //绑定WebSocket消息模板
                 setMqttService(mqttService).                        //绑定MQTT服务
-                setRedisZSetService(redisZSetService).              //绑定Redis服务
+                setRedisZSetService(redisZSetService).              //绑定Redis有序集合服务
+                setRedisDeviceInfoService(redisDeviceInfoService).  //绑定Redis设备信息服务
                 setDetectionHistoryService(detectionHistoryService).//绑定检测历史服务
                 setClientSocket(clientSocket).                      //绑定客户端
                 setDataQueue(dataQueue).                            //绑定数据队列
-                setYoloV5(new YoloV5()).
+//                setYoloV5(new YoloV5().setSR(new SR())).
+                setYoloV5(new YoloBoot()).
                 initConn().
                 initProc().
                 initSendImage().

@@ -1,6 +1,6 @@
 package com.erling.controller.opencv.yolo;
 
-import com.erling.service.opencv.dnn.model.YoloV5;
+import com.erling.service.opencv.model.yolo.YoloV5;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +28,7 @@ public class DnnDetectorControllerTest {
 
         return () -> { // 这个 lambda 表达式内部的代码将在异步任务线程中执行
             Map<String, byte[]> result = yoloV5.DnnYoloV5Detection(image.getBytes().length, image.getBytes());
+            System.out.println(result.keySet().iterator().next());
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(MediaType.IMAGE_JPEG)

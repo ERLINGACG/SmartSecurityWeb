@@ -13,11 +13,10 @@ import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.lib.opencv.struct.param.EncodeParam;
 import com.erling.service.obj.ServiceObject;
 import com.sun.jna.Pointer;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+//@Service
 public class CVDnnFaceService  extends ServiceObject {
 
     GroupMemberMapper groupMemberMapper;
