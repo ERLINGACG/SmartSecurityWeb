@@ -16,6 +16,8 @@ public interface DnnYuNet extends Library {
 
     void DnnYuNetSetArc(Pointer netPtr, Pointer arcFacePtr);
 
+    double DnnYuNetVerifyFeature(byte[] imageFeature, byte[] feature);
+
     void DnnYuNetDebugTime(Pointer ptr, int size, byte[] bytes, ImageData output,
                            OutputJson outputJson, FaceFeatureByte feature);
 }

@@ -11,6 +11,8 @@ import com.erling.utils.tomls.ReadToml;
 import com.sun.jna.Pointer;
 
 public class YuNet {
+
+
     @DyLibrary(TomlPath = "/config/Lib.toml")
     interface  IDnnYuNet extends DnnYuNet {};
     final IDnnYuNet dnnYuNet;
@@ -36,5 +38,9 @@ public class YuNet {
 
     public  void getInfo(){
         dnnYuNet.DnnYuNetGetInfo(netPtr);
+    }
+
+    public double VerifyFeature(byte[] imageFeature, byte[] feature) {
+        return dnnYuNet.DnnYuNetVerifyFeature(imageFeature, feature);
     }
 }

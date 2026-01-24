@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.net.Socket;
 
 public class ObjConn<T extends ObjConn<T>> {
-
+   //我的儿子必须是继承我自己，并且他知道自己是儿子
 
     protected final org.slf4j.Logger logger =  Logger.getLogger(this.getClass());
 

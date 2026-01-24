@@ -3,6 +3,7 @@ package com.erling.service.opencv.model.yolo;
 import com.erling.lib.ann.DyLibrary;
 import com.erling.lib.load.Loader;
 import com.erling.lib.opencv.dnn.DnnYoloBoot;
+import com.erling.lib.opencv.struct.destroy.DataDestroy;
 import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.lib.opencv.struct.output.OutputJson;
 import com.erling.utils.tomls.ReadToml;
@@ -17,19 +18,29 @@ public class YoloBoot extends YoloV5 {
     @DyLibrary(TomlPath = "/config/Lib.toml")
     interface IDnnYolo extends DnnYoloBoot {}
 
+    @DyLibrary(TomlPath = "/config/Lib.toml")
+    interface IDestroy extends DataDestroy {}
+
     private final IDnnYolo dnnYolo;
+    private final IDestroy destroy;
 
     public YoloBoot(){
         dnnYolo = Loader.LoadTLibrary(IDnnYolo.class);
+        destroy = Loader.LoadTLibrary(IDestroy.class);
+
         netPtr = dnnYolo.DnnYoloBootCreate(ReadToml.TomlString("/config/Lib.toml","YOLOBootPath"));
     }
 
     public void Destroy(){
+
         dnnYolo.DnnYoloBootDestroy(netPtr);
+//        destroy.ImageDataDestroy(imageData);
     }
 
+    ImageData imageData = new ImageData();
+
     public Map<String,byte[]> DnnYoloDetection(int size, byte[] bytes){
-        ImageData imageData = new ImageData();
+
         OutputJson outputJson = new OutputJson();
         dnnYolo.DnnYoloBootDetection(netPtr,size,bytes,imageData,outputJson);
         return Map.of(
@@ -46,4 +57,7 @@ public class YoloBoot extends YoloV5 {
                 outputJson.getDataJsonUtf8(), imageData.getDataBuffer()
         );
     }
+
+
+
 }

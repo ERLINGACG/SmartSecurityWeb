@@ -3,7 +3,10 @@ package com.erling.controller.group;
 import com.erling.entity.group.GroupMember;
 import com.erling.service.group.GroupMemberService;
 import com.erling.utils.result.Result;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +18,8 @@ import java.util.Base64;
 @RestController
 @RequestMapping("/group/member")
 public class GroupMemberController {
+
+    byte[] image;
     GroupMemberService groupMemberService;
 
     public GroupMemberController(GroupMemberService groupMemberService) {
@@ -100,6 +105,28 @@ public class GroupMemberController {
     ) throws IOException {
         return groupMemberService.verifyGroupMemberDnnSSDcaffem(topic, file.getBytes());
 //        return groupMemberService.verifyGroupMemberMysql(id, file.getBytes());
+    }
+
+    @PostMapping("/verifyDnnSSDcaffem/path")
+    public ResponseEntity<Result<?>> verifyGroupMemberDnnSSDcaffem_(
+            HttpServletRequest request,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        String topic = request.getHeader("topic");
+        System.out.println(topic);
+        System.out.println(file.getBytes().length);
+//        return ResponseEntity.ok().body(new Result<>(200,"验证成功",null));
+//        System.out.println(topic);
+        image = file.getBytes();
+        return groupMemberService.verifyGroupMemberDnnSSDcaffem(topic, file.getBytes());
+//        return groupMemberService.verifyGroupMemberMysql(id, file.getBytes());
+    }
+
+    @GetMapping("/image")
+    public ResponseEntity<?> getImage() {
+        return ResponseEntity.status(HttpStatus.OK).
+                contentType(MediaType.IMAGE_JPEG).
+                body(this.image);
     }
 
 }

@@ -9,7 +9,7 @@ import lombok.Getter;
 
 public class ArcFace {
     @DyLibrary(TomlPath = "/config/Lib.toml")
-    interface IDnnArcFace extends DnnArcFace {};
+    interface IDnnArcFace extends DnnArcFace {}
 
     @Getter
     final Pointer netPtr;

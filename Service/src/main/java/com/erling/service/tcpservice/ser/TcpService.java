@@ -5,6 +5,7 @@ import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
 import com.erling.service.opencv.dnn.YoloDnn;
 import com.erling.service.opencv.model.yolo.YoloBoot;
+import com.erling.service.redis.ser.RedisDeviceConfig;
 import com.erling.service.redis.ser.RedisDeviceInfoService;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.service.tcpservice.config.TcpConfig;
@@ -36,6 +37,8 @@ public class TcpService {
 
     private final RedisZSetService redisZSetService;
 
+    private final RedisDeviceConfig redisDeviceConfig;
+
     private final RedisDeviceInfoService redisDeviceInfoService;
 
     private final MqttService mqttService;
@@ -45,12 +48,13 @@ public class TcpService {
     @Autowired
     public TcpService(SimpMessagingTemplate messagingTemplate,
                       TcpConfig tcpConfig,
-                      RedisZSetService redisZSetService,
+                      RedisZSetService redisZSetService, RedisDeviceConfig redisDeviceConfig,
                       MqttService mqttService,
                       DetectionHistoryService detectionHistoryService,
                       DebugConfig debugConfig, RedisDeviceInfoService redisDeviceInfoService) {
         this.messagingTemplate = messagingTemplate;
         this.tcpConfig = tcpConfig;
+        this.redisDeviceConfig = redisDeviceConfig;
         this.debugConfig = debugConfig;
         this.mqttService = mqttService;
         this.redisZSetService = redisZSetService;
@@ -124,6 +128,7 @@ public class TcpService {
                 setRedisZSetService(redisZSetService).              //绑定Redis有序集合服务
                 setRedisDeviceInfoService(redisDeviceInfoService).  //绑定Redis设备信息服务
                 setDetectionHistoryService(detectionHistoryService).//绑定检测历史服务
+                setRedisDeviceConfig(redisDeviceConfig).
                 setClientSocket(clientSocket).                      //绑定客户端
                 setDataQueue(dataQueue).                            //绑定数据队列
 //                setYoloV5(new YoloV5().setSR(new SR())).

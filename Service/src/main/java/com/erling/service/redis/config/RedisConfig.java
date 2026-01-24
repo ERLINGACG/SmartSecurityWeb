@@ -41,6 +41,18 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
+     // 配置第三个 Redis 数据库连接
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory3() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName("localhost");
+        config.setPort(6379);
+        config.setDatabase(3); // 使用不同的数据库索引
+        return new LettuceConnectionFactory(config);
+    }
+
+
+
     // 为第一个数据库创建 RedisTemplate
     @Bean
     @Primary
@@ -61,6 +73,12 @@ public class RedisConfig {
         return getStringStringRedisTemplate(connectionFactory);
     }
 
+    @Bean
+    public RedisTemplate<String, String> redisTemplate3(
+            @Qualifier("redisConnectionFactory3") RedisConnectionFactory connectionFactory) {
+        return getStringStringRedisTemplate(connectionFactory);
+    }
+
     private RedisTemplate<String, String> getStringStringRedisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -71,6 +89,10 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+
+
+
+
 
 //    @Bean
 //    public RedisTemplate<String,String> redisTemplate(RedisConnectionFactory connectionFactory) {

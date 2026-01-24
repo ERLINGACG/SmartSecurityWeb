@@ -51,7 +51,8 @@ public class SendMqttMegForConn extends ObjConn<SendMqttMegForConn>{
                         }else{
                             log.info("第{}条消息,JsonResult为空",count);
                         }
-                        if(count%10==0){
+
+                        if(count%10==0){ // 每10条消息发送一次,避免刷屏
                             String tempJson = "{" + resultStr + "}";
                             // 检查并删除末尾逗号（即倒数第二位的逗号，因为最后一位是}）
                             if (tempJson.charAt(tempJson.length() - 2) == ',') {

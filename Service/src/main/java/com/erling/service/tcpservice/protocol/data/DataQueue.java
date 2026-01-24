@@ -4,6 +4,7 @@ import com.erling.utils.log.Logger;
 import lombok.Data;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -17,11 +18,14 @@ public class DataQueue {
 
     private final Queue<Map<String,Map<String,byte[]>>> urgentQueue = new LinkedList<>();
 
+    private final Queue<List<String >> deviceFollowListQueue = new LinkedList<>();
+
     public void clearQueue(){
         getQueue.clear();
         sendQueue.clear();
         messageQueue.clear();
         urgentQueue.clear();
+        deviceFollowListQueue.clear();
         this.ShowQueueInfo();
     }
 

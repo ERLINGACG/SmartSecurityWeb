@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 public class LifecycleConn extends LifecycleDataObj<LifecycleConn>{
 
 
+
     public LifecycleConn initConn() {
 
         GetDataForConn getDataForConn = new GetDataForConn().
@@ -14,7 +15,11 @@ public class LifecycleConn extends LifecycleDataObj<LifecycleConn>{
                 setClientSocket(clientSocket).
                 setConnKey(this.connKey).
                 setDataQueue(dataQueue).
-                setTimeout(Math.toIntExact(timeOut)).setRedisDeviceInfoService(redisDeviceInfoService);
+                setTimeout(Math.toIntExact(timeOut)).
+                setRedisDeviceInfoService(redisDeviceInfoService).
+                setRedisDeviceConfig(redisDeviceConfig)
+                ;
+
         ConnItem.add(getDataForConn);
         return this;
     }

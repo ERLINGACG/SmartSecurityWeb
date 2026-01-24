@@ -1,5 +1,6 @@
 package com.erling.service.tcpservice.protocol.conn;
 
+import com.erling.service.redis.ser.RedisDeviceConfig;
 import com.erling.service.redis.ser.RedisDeviceInfoService;
 import com.erling.service.tcpservice.protocol.ProcessingStandards;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.Map;
 
 
@@ -28,6 +30,17 @@ public class GetDataForConn extends ObjConn<GetDataForConn>  {
     @Getter
     private RedisDeviceInfoService redisDeviceInfoService;
 
+    @Getter
+    private RedisDeviceConfig redisDeviceConfig;
+
+    @Getter
+    private List<String> deviceFollowList;
+
+    public GetDataForConn setRedisDeviceConfig(RedisDeviceConfig redisDeviceConfig) {
+        this.redisDeviceConfig = redisDeviceConfig;
+        return this;
+    }
+
     public GetDataForConn setRedisDeviceInfoService(RedisDeviceInfoService redisDeviceInfoService) {
         this.redisDeviceInfoService = redisDeviceInfoService;
         return this;
@@ -46,7 +59,7 @@ public class GetDataForConn extends ObjConn<GetDataForConn>  {
     }
 
 
-    public void Close(){
+    public void Close(){ // 关闭连接
         try{
             clientSocket.close();
             dataQueue.clearQueue();
@@ -78,16 +91,23 @@ public class GetDataForConn extends ObjConn<GetDataForConn>  {
             ProcessingStandards<?> processingStandards = new ProcessingStandards<>();
             if(this.clientSocket.isConnected()) {
                 processingStandards.readData(input);
-                String topic = processingStandards.getTopic();
-                String key = (String) processingStandards.getBody(ProcessingStandards.ReadMode.TEXT_MODE);
+                String topic = processingStandards.getTopic();                                             //从处理标准中获取topic
+                String key = (String) processingStandards.getBody(ProcessingStandards.ReadMode.TEXT_MODE); // 从处理标准中获取密钥
                 log.info("连接topic:{},密钥:{}", topic, key);
+
                 if (!key.equals(this.connKey)) { //可更换密钥
-                    Close();
+                    Close();      // 关闭连接
                     log.error("密钥校验错误,当前设置密钥:{},目标设备密钥:{}", this.connKey, key);
                     return;
                 }
                 this.subscribeTopic = topic;
                 redisDeviceInfoService.setDeviceStatus(subscribeTopic, true);
+
+                deviceFollowList = redisDeviceConfig.getDeviceFollow(topic);
+                dataQueue.getDeviceFollowListQueue().offer(deviceFollowList);
+
+                log.info("连接topic:{} 关注设备:{}", topic, deviceFollowList);
+
                 lastActiveTime = System.currentTimeMillis();
             }
             while(true){

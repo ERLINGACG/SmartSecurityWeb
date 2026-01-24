@@ -3,6 +3,7 @@ package com.erling.service.tcpservice.protocol.life;
 import com.erling.service.detectHistroy.DetectionHistoryService;
 import com.erling.service.mqtt.MqttService;
 import com.erling.service.opencv.model.yolo.YoloV5;
+import com.erling.service.redis.ser.RedisDeviceConfig;
 import com.erling.service.redis.ser.RedisDeviceInfoService;
 import com.erling.service.redis.ser.RedisZSetService;
 import com.erling.service.tcpservice.protocol.conn.ObjConn;
@@ -46,6 +47,9 @@ public class LifecycleDataObj<T> implements LifecycleDataInf<T> {
 
     @Getter
     public RedisDeviceInfoService redisDeviceInfoService;
+
+    @Getter
+    public RedisDeviceConfig redisDeviceConfig;
 
 
 
@@ -130,6 +134,12 @@ public class LifecycleDataObj<T> implements LifecycleDataInf<T> {
 
     public T setRedisDeviceInfoService(RedisDeviceInfoService redisDeviceInfoService) {
         this.redisDeviceInfoService = redisDeviceInfoService;
+        return (T) this;
+    }
+
+
+    public T setRedisDeviceConfig(RedisDeviceConfig redisDeviceConfig) {
+        this.redisDeviceConfig = redisDeviceConfig;
         return (T) this;
     }
 }

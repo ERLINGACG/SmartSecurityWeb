@@ -37,7 +37,7 @@ public class MqttService extends ServiceObject {
         String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
         String payload = message.getPayload().toString();
         template.convertAndSend(topic+"/message", payload);
-        log.info("收到来自 [{}] 的消息: {}",topic,payload);
+        log.info("收到来自 [{}] 的消息,发送至:{}",topic,topic+"/message");
 
     }
 

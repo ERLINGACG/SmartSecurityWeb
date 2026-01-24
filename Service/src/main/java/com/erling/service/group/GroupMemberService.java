@@ -146,7 +146,8 @@ public class GroupMemberService extends ServiceObject {
             for(GroupMember groupMember:groupMemberList){
                 byte[] feature = groupMember.getMemberFeature();
                 if(feature!=null){
-                    double distance = ssdcaffem.VerifyFeature(imageFeature,feature);
+                    double distance = yunet.VerifyFeature(imageFeature,feature);
+                    logger.info("distance:{},memberName:{}",distance,groupMember.getMemberName());
                     if (distance < minDistance) {
                         minDistance = distance;
                         minDistanceMember = groupMember.clearFeature(); // 清除特征后记录
@@ -155,6 +156,7 @@ public class GroupMemberService extends ServiceObject {
             }
         }
         if (minDistanceMember != null) {
+            log.info("minDistance:{},memberName:{}",minDistance,minDistanceMember);
             return ResponseEntity.ok(
                     new Result<>(MemberResultEnum.MEMBER_GET_SUCCESS,
                                 Map.of("memberName",minDistanceMember,"distance",minDistance)

@@ -39,6 +39,7 @@ public class GroupController {
 
         @GetMapping("/getAll")
         public ResponseEntity<Result<?>> getAllGroups(@RequestHeader("Group-Email") String email) {
+             System.out.println(email);
              return groupService.getGroups(email);
         }
 
