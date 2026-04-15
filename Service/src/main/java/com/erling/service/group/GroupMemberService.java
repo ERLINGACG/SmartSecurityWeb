@@ -245,6 +245,11 @@ public class GroupMemberService extends ServiceObject {
 
     }
 
+    public void MakeTest(MultipartFile file) throws IOException {
+            byte[] feature = yunet.DnnYuNetDebugTime(file.getBytes().length,file.getBytes());
+
+    }
+
 
 
 }

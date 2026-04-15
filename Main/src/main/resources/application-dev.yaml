@@ -3,7 +3,8 @@ tcp:
      port: 12346
   connection:
      threads: 24
-     timeout: 30000
+     timeout: 10
+     connKey: keyTest
 spring:
   mqtt:
     broker: tcp://localhost:1883
@@ -21,7 +22,7 @@ spring:
   ai:
     openai:
       base-url: https://api.deepseek.com
-      api-key:
+      api-key: sk-61ddc27614b64880b356ce9027a3de97
       chat:
         options:
           model: deepseek-chat

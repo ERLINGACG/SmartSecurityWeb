@@ -4,9 +4,8 @@ import com.erling.lib.instance.Instance;
 import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.lib.opencv.utils.Utils;
 import com.erling.utils.log.Logger;
-import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class UtilsServiceTest {
     Utils utils;
     public UtilsServiceTest() {

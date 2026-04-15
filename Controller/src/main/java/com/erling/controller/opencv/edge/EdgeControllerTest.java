@@ -1,22 +1,19 @@
 package com.erling.controller.opencv.edge;
 
 import com.erling.service.opencv.edge.EdgeServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@RestController
-@RequestMapping("/edge/test")
+//@RestController
+//@RequestMapping("/edge/test")
 public class EdgeControllerTest {
     EdgeServiceTest edgeService;
-    @Autowired
+//    @Autowired
     public void setEdgeService(EdgeServiceTest edgeService) {
         this.edgeService = edgeService;
     }

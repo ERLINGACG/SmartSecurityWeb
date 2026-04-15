@@ -52,7 +52,4 @@ public class SSDcaffem {
     public double VerifyFeature(byte[] feature1,byte[] feature2){
         return faceNet.VerifyFeature(feature1,feature2);
     }
-
-
-
 }

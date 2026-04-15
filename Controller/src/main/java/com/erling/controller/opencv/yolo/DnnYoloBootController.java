@@ -11,12 +11,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/yolo")
 public class DnnYoloBootController {
 
     YoloBoot yoloBoot;
+
+    Logger logger = Logger.getLogger(DnnYoloBootController.class.getName());
 
     DnnYoloBootController() {
         this.yoloBoot = new YoloBoot();
@@ -56,5 +59,15 @@ public class DnnYoloBootController {
         long finalMemory = runtime.totalMemory() - runtime.freeMemory();
         System.out.printf("Final memory diff = %d bytes%n", finalMemory - initialMemory);
 
+    }
+
+    @RequestMapping("yolo/maker/test")
+    public void DnnYoloDetectionTest(@RequestParam("image") MultipartFile image) throws IOException, InterruptedException  {
+        for(int i = 0; i < 100; i++){
+            long start = System.currentTimeMillis();
+            yoloBoot.DnnYoloDetection((int) image.getSize(), image.getBytes());
+            long end = System.currentTimeMillis();
+            logger.info("DnnYoloDetectionTest: " + (end - start) + "ms");
+        }
     }
 }

@@ -1,0 +1,11 @@
+{
+  "env": "env1",
+  "env1": {
+      "inputWidth": 300,
+      "inputHeight": 300,
+      "confThreshold": 0.5,
+      "caffemodel_path": "E:\\SmartSecurity\\SmartSecurityWeb\\lib\\x64\\debug\\model\\testN\\res10_300x300_ssd_iter_140000.caffemodel",
+      "prototxt_path":   "E:\\SmartSecurity\\SmartSecurityWeb\\lib\\x64\\debug\\model\\testN\\test.prototxt",
+      "isCUDA": true
+  }
+}

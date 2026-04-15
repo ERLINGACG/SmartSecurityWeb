@@ -1,17 +1,15 @@
 package com.erling.service.opencv.edge;
 
+import com.erling.lib.ann.LibraryAnn;
+import com.erling.lib.instance.Instance;
+import com.erling.lib.instance.Load;
 import com.erling.lib.instance.PathConfig;
 import com.erling.lib.opencv.edge.EdgeDetection;
-import com.erling.lib.instance.Instance;
-import com.erling.lib.ann.LibraryAnn;
-import com.erling.lib.instance.Load;
 import com.erling.lib.opencv.struct.output.ImageData;
 import com.erling.lib.opencv.struct.param.EdgeParam;
 import com.sun.jna.Pointer;
 
-import org.springframework.stereotype.Service;
-
-@Service
+//@Service
 public class EdgeServiceTest {
     private final EdgeDetection edgeDetection;
     private final Pointer EdgeClassPointer;

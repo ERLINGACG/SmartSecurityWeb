@@ -5,6 +5,8 @@ import com.erling.service.group.GroupMemberService;
 import com.erling.utils.result.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -127,6 +129,17 @@ public class GroupMemberController {
         return ResponseEntity.status(HttpStatus.OK).
                 contentType(MediaType.IMAGE_JPEG).
                 body(this.image);
+    }
+    Logger logger= LoggerFactory.getLogger(GroupMemberController.class);
+
+    @RequestMapping("/face/maker/test")
+    public void MakeTest(@RequestParam("file") MultipartFile file) throws IOException {
+        for(int i = 0; i < 40; i++){
+            long start = System.currentTimeMillis();
+            groupMemberService.MakeTest(file);
+            long end = System.currentTimeMillis();
+            logger.info("MakeTest: " + (end - start) + "ms");
+        }
     }
 
 }

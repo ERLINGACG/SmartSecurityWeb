@@ -1,6 +1,7 @@
 ENV = "E:/SmartSecurity/SmartSecurityWeb/lib/x64/debug/opencv_world4120.dll"
 #ENV = "/mnt/e/SmartSecurity/testRun/lib/x64/debug/libopencv_world.so.412"
 LibPath = "lib/x64/debug/SmartSecurityCoreLibTest"
+#LibPath = "/app/lib/x64/debug/libSmartSecurityCoreLibTest"
 #LibPath = "/mnt/e/SmartSecurity/testRun/lib/x64/debug/libSmartSecurityCoreLibTest"
 YOLOV5ConfigPath = "./lib/x64/debug/config/yoloConfig.json"
 SSDConfigPath = "./lib/x64/debug/config/coffeConfig.json"
