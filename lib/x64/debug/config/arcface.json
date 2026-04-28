@@ -1,0 +1,9 @@
+{
+  "env": "env4",
+  "env4": {
+    "facenet_path":"./lib/x64/debug/model/arc/arcfaceresnet100-8.onnx",
+    "isCUDA": true,
+    "input_width": 112,
+    "input_height": 112
+  }
+}

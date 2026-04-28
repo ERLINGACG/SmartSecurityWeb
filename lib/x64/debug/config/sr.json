@@ -1,0 +1,15 @@
+{
+  "env": "env2",
+  "env1": {
+    "model_path": "./config/sr/FSRCNN_x2.pb",
+    "model_type": "fsrcnn",
+    "model_scale": 2,
+    "isCUDA": true
+  },
+  "env2": {
+    "model_path": "./lib/x64/debug/model/sr/ESPCN_x2.pb",
+    "model_type": "espcn",
+    "model_scale": 2,
+    "isCUDA": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "env": "env2",
+  "env2": {
+    "facenet_path":"E:\\SmartSecurity\\SmartSecurityWeb\\lib\\x64\\debug\\model\\facenet.onnx",
+    "isCUDA": true,
+    "input_width": 160,
+    "input_height": 160
+  },
+  "env3": {
+    "facenet_path":"./config/facenet/facenet512.onnx",
+    "isCUDA": true,
+    "input_width": 160,
+    "input_height": 160
+  },
+  "env4": {
+    "facenet_path":"E:\\SmartSecurity\\javaLib\\Jopencv\\config\\facenet\\arcfaceresnet100-8.onnx",
+    "isCUDA": true,
+    "input_width": 160,
+    "input_height": 160
+  }
+}

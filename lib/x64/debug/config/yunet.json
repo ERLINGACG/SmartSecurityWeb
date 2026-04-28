@@ -1,0 +1,13 @@
+{
+  "env": "t1",
+   "t1": {
+      "yunet_path": "./lib/x64/debug/model/yunet/face_detection_yunet_2023mar.onnx",
+      "inputWidth": 640,
+      "inputHeight": 640,
+      "scoreThreshold": 0.9,
+      "nmsThreshold": 0.3,
+      "maxFace": 5000,
+      "isCUDA": true
+   }
+
+}
